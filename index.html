@@ -1,0 +1,3569 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>マイ収益カレンダー</title>
+    
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    
+    <style>
+        /* 数値入力欄のスピナー（△▽）を消す設定 */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+
+        /* ================= 画面全体の基本デザイン ================= */
+        body { 
+            font-family: 'Helvetica Neue', Arial, sans-serif; 
+            background-color: #f4f6f9; 
+            margin: 0; 
+            padding: 15px; 
+            height: 100vh; 
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+            color: #333; 
+            transition: background-color 0.3s, color 0.3s;
+        }
+        .container { 
+            width: 100%; 
+            max-width: 1300px; 
+            height: 100%; 
+            display: flex;
+            flex-direction: column; 
+            background: #ffffff; 
+            padding: 15px 25px; 
+            border-radius: 14px; 
+            box-sizing: border-box;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08); 
+            transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        #calendarView, #trendsView, #ratioView, #averageView, #safeView, #myPageView {
+            flex: 1; 
+            min-height: 0; 
+            width: 100%; 
+        }
+        #calendar {
+            height: 100%;
+            width: 100%; 
+        }
+        
+        /* ================= ヘッダー部分 ================= */
+        .header-wrapper { display: flex; flex-direction: column; margin-bottom: 10px; border-bottom: 2px solid #edf2f7; padding-bottom: 10px; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .header-bottom { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+        
+        .left-header { display: flex; align-items: center; gap: 15px; }
+        .right-header { display: flex; align-items: center; gap: 12px; }
+        .menu-btn { font-size: 28px; background: none; border: none; cursor: pointer; color: #4a5568; padding: 5px 10px; border-radius: 6px; }
+        .menu-btn:hover { background: #edf2f7; }
+        .title { margin: 0; font-size: 22px; color: #2d3748; font-weight: bold; height: 40px; display: flex; align-items: center; }
+        
+        /* === 合計＆プログレスバー === */
+        .monthly-total-container { display: flex; flex-direction: column; align-items: flex-end; min-width: 180px; }
+        .monthly-total { background: #e6fffa; color: #00a389; padding: 0 16px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-weight: bold; font-size: 16px; border: 1px solid #b2f5ea; white-space: nowrap; width: 100%; box-sizing: border-box; }
+        .progress-wrapper { display:flex; align-items:center; gap:8px; margin-top:6px; width:100%; }
+        .header-progress-bar { flex:1; height:36px; background:#e2e8f0; border-radius:999px; overflow:hidden;  height: 50px !important; min-height: 50px !important; border-radius: 12px !important; }
+        .header-progress-fill{ height:100%; width:0%; background:#38a169; transition:width .3s ease; }
+        .header-progress-text{ font-size:12px; font-weight:bold; white-space:nowrap; }
+        .fc-toolbar-title-wrap{ display:flex; flex-direction:column; align-items:center; gap:4px; }
+        .fc-title-progress{ width:300px; max-width:100%; }
+        .fc-title-progress .header-progress-bar{ height:22px !important; min-height:22px !important; }
+
+        /* ================= 表示切り替えフィルター ================= */
+        .filter-container { position: relative; }
+        .btn-filter { background: #fff; border: 1px solid #cbd5e0; padding: 0 12px; height: 40px; box-sizing: border-box; border-radius: 8px; cursor: pointer; font-weight: bold; color: #4a5568; display: flex; align-items: center; gap: 6px; font-size: 14px; white-space: nowrap; }
+        .btn-filter:hover { background: #edf2f7; }
+        .filter-menu-popup {
+            display: none; position: absolute; top: 100%; right: 0; margin-top: 8px;
+            background: #fff; border: 1px solid #e2e8f0; border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15); padding: 15px; width: 240px;
+            z-index: 1000; max-height: 400px; overflow-y: auto; text-align: left;
+        }
+        .filter-menu-popup.open { display: block; }
+        .filter-item { display: flex; align-items: center; margin-bottom: 10px; cursor: pointer; font-size: 14px; color: #2d3748; }
+        .filter-item.group { font-weight: bold; margin-top: 12px; border-bottom: 1px solid #edf2f7; padding-bottom: 6px; }
+        .filter-item.proj { margin-left: 20px; color: #4a5568; }
+        .filter-cb { display: none; }
+        .icon::before { content: '〇'; font-size: 18px; margin-right: 8px; color: #a0aec0; }
+        .filter-cb:checked + .icon::before { content: '◉'; color: #3182ce; font-weight: bold; }
+
+        .fc { color: #2d3748 !important; }
+        .fc a { color: #2d3748 !important; text-decoration: none !important; }
+        .fc-col-header-cell { background-color: #f7fafc; } 
+
+        .fc-header-toolbar {
+            display: grid !important;
+            grid-template-columns: 1fr auto 1fr !important;
+            align-items: center !important;
+            width: 100% !important;
+            margin-bottom: 10px !important;
+            position: relative;
+        }
+        .fc-header-toolbar .fc-toolbar-chunk:nth-child(1) { justify-self: start; }
+        .fc-header-toolbar .fc-toolbar-chunk:nth-child(2) { justify-self: center; text-align: center; }
+        .fc-header-toolbar .fc-toolbar-chunk:nth-child(3) { justify-self: end; }
+        .fc-title-progress{ position:absolute; right:0; top:50%; transform:translateY(-50%); width:300px; }
+        .fc-toolbar-title-wrap{ display:block; }
+
+        .fc-event, .fc-event-main, .fc-event-title, .fc-daygrid-event, .fc-daygrid-event a { 
+            background-color: transparent !important; border: none !important; color: #2563eb !important; font-weight: 600 !important; font-size: 14px !important; text-align: center !important; box-shadow: none !important; cursor: pointer !important; display: block !important; width: 100% !important;
+        }
+        .fc-event:hover { background-color: rgba(49, 130, 206, 0.12) !important; border-radius: 6px !important; }
+        .fc-daygrid-day { cursor: pointer; }
+        .fc-daygrid-day:hover { background-color: #f7fafc; }
+        .fc-daygrid-day-frame { min-height: 60px !important; }
+
+        /* ================= ナビゲーションメニュー ================= */
+        .sidebar {
+            position: fixed; top: 0; left: 0; width: 280px; height: 100%;
+            background: #2d3748; color: #fff; z-index: 1000;
+            transform: translateX(-100%); transition: transform 0.3s ease;
+            padding: 25px 12px 25px 25px; box-sizing: border-box;
+            display: flex; flex-direction: column; overflow: hidden;
+        }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); z-index: 999; }
+        .sidebar-overlay.open { display: block; }
+        .sidebar h2 {
+            font-size: 20px; margin-top: 0; padding-bottom: 15px;
+            border-bottom: 1px solid #4a5568; flex-shrink: 0;
+        }
+        .menu-list {
+            list-style: none; padding: 0 8px 0 0; margin: 20px 0 0 0;
+            overflow-y: auto; flex: 1; min-height: 0;
+            scrollbar-width: thin; scrollbar-color: #718096 #1a202c;
+        }
+        .sidebar .menu-list::-webkit-scrollbar { width: 8px; }
+        .sidebar .menu-list::-webkit-scrollbar-track { background: #1a202c; border-radius: 999px; }
+        .sidebar .menu-list::-webkit-scrollbar-thumb { background: #718096; border-radius: 999px; }
+        .sidebar .menu-list::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
+        .menu-item-btn { width: 100%; background: none; border: none; color: #e2e8f0; text-align: left; padding: 12px 15px; margin-bottom: 5px; font-size: 15px; cursor: pointer; border-radius: 8px; font-weight: bold; transition: all 0.2s; }
+        .menu-item-btn:hover { background: #4a5568; color: #fff; }
+        .menu-divider { border: 0; border-top: 1px solid #4a5568; margin: 12px 0; }
+
+        /* ================= ワークモーダル ================= */
+        .work-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1001; justify-content: center; align-items: center; }
+        .work-modal-content { background: #fff; padding: 30px; border-radius: 14px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.15); }
+        .work-modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #edf2f7; padding-bottom: 12px; margin-bottom: 20px; }
+        .work-modal-title { margin: 0; font-size: 20px; color: #2d3748; font-weight: bold; }
+        .work-view { display: none; }
+        .work-view.active { display: block; }
+        .close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #a0aec0; }
+        
+        select, input[type="text"], input[type="number"], input[type="date"], input[type="month"], input[type="password"] { padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; font-size: 14px; box-sizing: border-box; }
+        .btn-blue { background: #3182ce; color: #fff; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-blue:hover { background: #2b6cb0; }
+        .btn-red { background: #fed7d7; color: #e53e3e; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
+        .btn-red:hover { background: #feb2b2; }
+        .btn-submit { width: 100%; padding: 12px; font-size: 16px; margin-top: 15px; }
+
+        .input-group { display: flex; gap: 8px; margin-bottom: 15px; }
+        .input-group input, .input-group select { flex: 1; }
+        .section-title { font-size: 16px; color: #2d3748; margin: 20px 0 10px 0; border-bottom: 2px solid #edf2f7; padding-bottom: 5px; }
+        .list-box { max-height: 400px; overflow-y: auto; padding: 10px 15px; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #edf2f7; }
+        .group-move-select { padding: 4px 8px; font-size: 12px; border-radius: 4px; border: 1px solid #cbd5e0; background: #fff; cursor: pointer; }
+        .selector-row { display: flex; gap: 10px; margin-bottom: 20px; }
+        .selector-row select, .selector-row input { flex: 1; }
+        .vertical-input-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #edf2f7; }
+        .vertical-input-row label { font-size: 14px; font-weight: bold; color: #4a5568; flex: 1; }
+        .vertical-input-row input { width: 130px; text-align: right; }
+        .revenue-list { list-style: none; padding: 0; margin: 0 0 20px 0; max-height: 200px; overflow-y: auto; }
+        .revenue-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #edf2f7; }
+        .no-data { color: #718096; text-align: center; padding: 20px 0; font-size: 14px; }
+
+        /* ================= グラフ・推移・割合画面専用 ================= */
+        #chartCanvasContainer, #ratioCanvasContainer {
+            overflow-x: auto !important;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-sizing: border-box;
+            -webkit-overflow-scrolling: touch;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .chart-scroll-wrapper {
+            height: 100%;
+            width: 100%;
+            position: relative;
+        }
+
+        #averageCardsContainer {
+            overflow-y: auto;
+            width: 100%;
+            height: 100%;
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            box-sizing: border-box;
+            padding: 16px;
+            -webkit-overflow-scrolling: touch;
+        }
+        #averageCardsContainer:has(.unit-day),
+        #averageCardsContainer:has(.unit-week) {
+            display: flex;
+            flex-direction: column;
+            overflow-y: hidden;
+        }
+        .average-cards-grid {
+            display: grid;
+            gap: 12px;
+            width: 100%;
+        }
+        .average-cards-grid.unit-day {
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 4px;
+            flex: 1;
+            min-height: 0;
+            height: 100%;
+            align-items: stretch;
+            grid-auto-rows: 1fr;
+        }
+        .average-cards-grid.unit-week {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            flex: 1;
+            min-height: 0;
+            height: 100%;
+            align-items: stretch;
+            grid-auto-rows: 1fr;
+        }
+        .average-cards-grid.unit-month { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .average-card {
+            background: #f7fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 12px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .average-cards-grid.unit-day .average-card,
+        .average-cards-grid.unit-week .average-card {
+            height: 100%;
+        }
+        .average-card-label { font-size: 14px; font-weight: bold; color: #4a5568; text-align: center; margin-bottom: 4px; }
+        .average-card-amount { font-size: 16px; font-weight: bold; color: #00a389; text-align: center; margin-bottom: 8px; }
+        .average-card-chart { position: relative; height: 130px; width: 100%; margin-bottom: 8px; }
+        .average-cards-grid.unit-day .average-card-chart,
+        .average-cards-grid.unit-week .average-card-chart {
+            flex: 1;
+            height: auto;
+            min-height: 100px;
+        }
+        .average-card-legend { font-size: 11px; max-height: 120px; overflow-y: auto; }
+        .average-cards-grid.unit-day .average-card-legend,
+        .average-cards-grid.unit-week .average-card-legend {
+            flex: 1;
+            min-height: 0;
+            max-height: none;
+            overflow-y: auto;
+        }
+        .average-card-legend-row { display: flex; justify-content: space-between; align-items: center; padding: 3px 0; border-bottom: 1px solid #edf2f7; gap: 4px; }
+        .average-card-legend-name { display: flex; align-items: center; gap: 4px; min-width: 0; flex: 1; color: #2d3748; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .average-card-legend-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+        .average-card-empty { text-align: center; color: #718096; font-size: 12px; padding: 20px 0; }
+        @media (max-width: 1100px) {
+            .average-cards-grid.unit-day { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        }
+        @media (max-width: 768px) {
+            .average-cards-grid.unit-day { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .average-cards-grid.unit-week { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .average-cards-grid.unit-month { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+        @media (max-width: 480px) {
+            .average-cards-grid.unit-day,
+            .average-cards-grid.unit-week,
+            .average-cards-grid.unit-month { grid-template-columns: 1fr; }
+        }
+
+        /* ================= 金庫画面専用 ================= */
+        #safeView {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            padding: 20px;
+            box-sizing: border-box;
+            overflow-y: auto;
+        }
+        .safe-table { width: 100%; border-collapse: collapse; text-align: left; }
+        .safe-table th { padding: 12px; border-bottom: 2px solid #cbd5e0; font-weight: bold; color: #4a5568; position: sticky; top: 0; background: #f7fafc; z-index: 1; }
+        .safe-table td { padding: 12px; border-bottom: 1px solid #edf2f7; color: #2d3748; }
+
+        /* 金庫目のアイコン用ボタン */
+        .toggle-eye-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #718096;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 6px;
+            border-radius: 6px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .toggle-eye-btn:hover {
+            background: #edf2f7;
+            color: #2d3748;
+        }
+
+        /* ================= マイページ専用 ================= */
+        #myPageView {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+            overflow-y: auto;
+        }
+        .mypage-banner {
+            width: 100%;
+            height: 200px;
+            background-color: #cbd5e0;
+            background-size: cover;
+            background-position: center;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+            flex-shrink: 0;
+        }
+        .mypage-profile-section {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+        .mypage-left {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: -70px;
+        }
+        .mypage-icon {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background-color: #e2e8f0;
+            border: 4px solid #fff;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            flex-shrink: 0;
+        }
+        .mypage-name {
+            margin-top: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2d3748;
+        }
+        .mypage-right {
+            padding-top: 10px;
+        }
+        .btn-settings {
+            background: none;
+            border: 1px solid #cbd5e0;
+            padding: 8px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+            transition: background-color 0.2s;
+        }
+        .btn-settings:hover {
+            background: #edf2f7;
+        }
+        .mypage-analytics {
+            padding: 20px 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .mypage-chart-section {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #fff;
+            padding: 16px;
+            box-sizing: border-box;
+        }
+        .mypage-chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 14px;
+        }
+        .mypage-chart-title {
+            margin: 0;
+            font-size: 18px;
+            color: #2d3748;
+        }
+        .mypage-chart-subtext {
+            margin-top: 4px;
+            font-size: 13px;
+            color: #718096;
+            font-weight: bold;
+        }
+        .mypage-chart-actions {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .mypage-chart-total {
+            min-width: 150px;
+            width: auto;
+        }
+        .mypage-chart-body {
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: #fff;
+            min-height: 300px;
+            box-sizing: border-box;
+        }
+        .mypage-ratio-body {
+            display: grid;
+            grid-template-columns: minmax(280px, 1fr) minmax(240px, 1fr);
+            gap: 18px;
+            padding: 16px;
+        }
+        .mypage-ratio-canvas,
+        .mypage-trends-canvas {
+            position: relative;
+            min-height: 280px;
+        }
+        .mypage-ratio-table {
+            overflow-y: auto;
+            min-height: 0;
+        }
+        .mypage-trends-body {
+            padding: 16px;
+        }
+        @media (max-width: 760px) {
+            .mypage-chart-header,
+            .mypage-chart-actions {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+            .mypage-ratio-body {
+                grid-template-columns: 1fr;
+            }
+            .mypage-chart-total {
+                width: 100%;
+            }
+        }
+
+        /* ================= ダークモード設定 ================= */
+        body.dark-mode { background-color: #1a202c; color: #edf2f7; }
+        body.dark-mode .container { background-color: #2d3748; box-shadow: 0 4px 12px rgba(0,0,0,0.3); }
+        body.dark-mode .header-wrapper { border-bottom-color: #4a5568; }
+        body.dark-mode .title { color: #edf2f7; }
+        body.dark-mode .btn-filter { background: #4a5568; border-color: #718096; color: #edf2f7; }
+        body.dark-mode .btn-filter:hover { background: #4a5568; }
+        body.dark-mode .filter-menu-popup { background: #2d3748; border-color: #4a5568; box-shadow: 0 4px 15px rgba(0,0,0,0.3); }
+        body.dark-mode .filter-item { color: #edf2f7; }
+        body.dark-mode .filter-item.group { border-bottom-color: #4a5568; }
+        body.dark-mode .filter-item.proj { color: #cbd5e0; }
+        body.dark-mode .monthly-total { background: #1a202c; color: #4fd1c5; border-color: #234e52; }
+        body.dark-mode .header-progress-bar{ background:#1f2937 !important; }
+        body.dark-mode .menu-btn { color: #cbd5e0; }
+        body.dark-mode .menu-btn:hover { background: #4a5568; }
+        body.dark-mode .fc { color: #edf2f7 !important; }
+        body.dark-mode .fc a { color: #edf2f7 !important; }
+        body.dark-mode .fc-theme-standard td, body.dark-mode .fc-theme-standard th, body.dark-mode .fc-scrollgrid { border-color: #4a5568 !important; }
+        body.dark-mode .fc-col-header-cell { background-color: #1a202c; }
+        body.dark-mode .fc-daygrid-day:hover { background-color: #4a5568; }
+        body.dark-mode .fc-day-other { background-color: #232934; }
+        body.dark-mode .fc-event, body.dark-mode .fc-event-main, body.dark-mode .fc-event-title, body.dark-mode .fc-daygrid-event, body.dark-mode .fc-daygrid-event a { color: #60a5fa !important; font-weight: 600 !important; font-size: 14px !important; }
+        body.dark-mode .fc-event:hover { background-color: rgba(99, 179, 237, 0.2) !important; }
+        body.dark-mode .work-modal-content { background: #2d3748; color: #edf2f7; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.4); }
+        body.dark-mode .work-modal-header { border-bottom-color: #4a5568; }
+        body.dark-mode .work-modal-title { color: #edf2f7; }
+        body.dark-mode .section-title { color: #edf2f7; border-bottom-color: #4a5568; }
+        body.dark-mode .list-box { background: #1a202c; border-color: #4a5568; }
+        body.dark-mode .list-item, body.dark-mode .vertical-input-row, body.dark-mode .revenue-item { border-bottom-color: #4a5568; }
+        body.dark-mode .vertical-input-row label { color: #f7fafc !important; }
+        body.dark-mode select, body.dark-mode input[type="text"], body.dark-mode input[type="password"], body.dark-mode input[type="number"], body.dark-mode input[type="date"], body.dark-mode input[type="month"] { background-color: #4a5568; color: #fff; border-color: #718096; }
+        body.dark-mode .group-move-select { background-color: #4a5568; color: #fff; border-color: #718096; }
+        body.dark-mode #chartCanvasContainer, body.dark-mode #ratioCanvasContainer, body.dark-mode #averageCardsContainer { background-color: #2d3748 !important; border-color: #4a5568 !important; }
+        body.dark-mode .average-card { background-color: #1a202c; border-color: #4a5568; }
+        body.dark-mode .average-card-label { color: #cbd5e0; }
+        body.dark-mode .average-card-amount { color: #4fd1c5; }
+        body.dark-mode .average-card-legend-row { border-bottom-color: #4a5568; }
+        body.dark-mode .average-card-legend-name { color: #edf2f7; }
+        body.dark-mode .average-card-empty { color: #718096; }
+        body.dark-mode #trendsDateLabel { color: #edf2f7 !important; }
+        
+        /* 金庫ダークモード */
+        body.dark-mode #safeView { background-color: #2d3748; border-color: #4a5568; }
+        body.dark-mode .safe-table th { border-bottom-color: #4a5568; color: #cbd5e0; background-color: #1a202c; }
+        body.dark-mode .safe-table td { border-bottom-color: #4a5568; color: #edf2f7; }
+        body.dark-mode .safe-label { color: #cbd5e0 !important; }
+        body.dark-mode .toggle-eye-btn { color: #a0aec0; }
+        body.dark-mode .toggle-eye-btn:hover { background: #4a5568; color: #edf2f7; }
+
+        /* マイページダークモード */
+        body.dark-mode #myPageView { background-color: #2d3748; border-color: #4a5568; }
+        body.dark-mode .mypage-icon { border-color: #2d3748; background-color: #1a202c; }
+        body.dark-mode .mypage-name { color: #edf2f7; }
+        body.dark-mode .btn-settings { border-color: #718096; color: #edf2f7; }
+        body.dark-mode .btn-settings:hover { background: #4a5568; }
+        body.dark-mode .mypage-chart-section,
+        body.dark-mode .mypage-chart-body { background-color: #2d3748; border-color: #4a5568; }
+        body.dark-mode .mypage-chart-title { color: #edf2f7; }
+        body.dark-mode .mypage-chart-subtext { color: #cbd5e0; }
+        /* ================= スクロールバーのスタイル ================= */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e0; border-radius: 999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #a0aec0; }
+        body.dark-mode ::-webkit-scrollbar-track { background: transparent; }
+        body.dark-mode ::-webkit-scrollbar-thumb { background: #4a5568; border-radius: 999px; }
+        body.dark-mode ::-webkit-scrollbar-thumb:hover { background: #718096; }
+
+        /* ================= バックアップ・移行 ================= */
+        .backup-actions { display: flex; flex-direction: column; gap: 12px; }
+        .backup-section { padding: 15px; background: #f7fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
+        .backup-section h5 { margin: 0 0 10px 0; font-size: 14px; color: #2d3748; }
+        .backup-section p { margin: 0 0 10px 0; font-size: 12px; color: #718096; line-height: 1.5; }
+        .backup-btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+        .btn-green { background: #38a169; color: #fff; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .btn-green:hover { background: #2f855a; }
+        .btn-outline { background: #fff; color: #4a5568; border: 1px solid #cbd5e0; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; }
+        .btn-outline:hover { background: #edf2f7; }
+        body.dark-mode .backup-section { background: #1a202c; border-color: #4a5568; }
+        body.dark-mode .backup-section h5 { color: #edf2f7; }
+        body.dark-mode .backup-section p { color: #a0aec0; }
+        body.dark-mode .btn-outline { background: #2d3748; color: #edf2f7; border-color: #718096; }
+        body.dark-mode .btn-outline:hover { background: #4a5568; }
+        .cloud-sync-status { font-size: 13px; font-weight: bold; color: #2d3748; margin: 0 0 8px 0; }
+        .cloud-sync-status.syncing { color: #3182ce; }
+        .cloud-sync-status.ok { color: #38a169; }
+        .cloud-sync-status.error { color: #e53e3e; }
+        .cloud-sync-meta { font-size: 11px; color: #718096; margin: 8px 0 0 0; }
+        body.dark-mode .cloud-sync-status { color: #edf2f7; }
+        body.dark-mode .cloud-sync-meta { color: #a0aec0; }
+
+        /* ================= 金庫 使用済み ================= */
+        .safe-used-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #38a169; }
+        .safe-row-used td { opacity: 0.55; }
+        .safe-row-used td:nth-child(3) { text-decoration: line-through; }
+        .safe-total-unused { background: #e6fffa; color: #00a389; border: 1px solid #b2f5ea; }
+        .safe-total-used { background: #f7fafc; color: #718096; border: 1px solid #e2e8f0; font-size: 14px; }
+        body.dark-mode .safe-total-unused { background: #234e52; color: #81e6d9; border-color: #285e61; }
+        body.dark-mode .safe-total-used { background: #1a202c; color: #a0aec0; border-color: #4a5568; }
+
+        /* ================= 目標達成お祝い ================= */
+        #celebrationOverlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 2000; pointer-events: none; justify-content: center; align-items: center;
+        }
+        #celebrationOverlay.active { display: flex; }
+        .celebration-message {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff; padding: 30px 50px; border-radius: 20px;
+            font-size: 28px; font-weight: bold; text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: celebrationPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .celebration-message small { display: block; font-size: 16px; margin-top: 8px; font-weight: normal; opacity: 0.9; }
+        @keyframes celebrationPop {
+            0% { transform: scale(0.3); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<div class="sidebar" id="sidebar">
+    <h2>メニュー</h2>
+    <ul class="menu-list">
+        <li><button class="menu-item-btn" onclick="showCalendarView()">🏠 カレンダー画面</button></li>
+        <li class="menu-divider"></li>
+        <li><button class="menu-item-btn" onclick="openWorkModal('projects')">📂 グループ・項目の登録</button></li>
+        <li><button class="menu-item-btn" onclick="openWorkModal('goals')">🎯 目標金額の設定</button></li>
+        <li class="menu-divider"></li>
+        <li><button class="menu-item-btn" onclick="openWorkModal('monthly')">📅 項目ごとの一括入力</button></li>
+        <li><button class="menu-item-btn" onclick="openWorkModal('daily')">⚡ 各日の一括入力</button></li>
+        <li class="menu-divider"></li>
+        <li><button class="menu-item-btn" onclick="showTrendsView()">📈 収益推移</button></li>
+        <li><button class="menu-item-btn" onclick="showRatioView()">📊 収益割合</button></li>
+        <li><button class="menu-item-btn" onclick="showAverageView()">📉 収益平均</button></li>
+        <li class="menu-divider"></li>
+        <li><button class="menu-item-btn" onclick="showSafeView()">🏦 金庫</button></li>
+        <li><button class="menu-item-btn" onclick="openBackupModal()">💾 データのバックアップ</button></li>
+        <li class="menu-divider"></li>
+        <li><button class="menu-item-btn" onclick="showMyPageView()">👤 マイページ</button></li>
+    </ul>
+</div>
+
+<div id="celebrationOverlay">
+    <div class="celebration-message">
+        🎉 目標達成おめでとう！ 🎉
+        <small>今月の目標金額を達成しました！</small>
+    </div>
+</div>
+
+<div class="work-modal-overlay" id="backupModal">
+    <div class="work-modal-content" style="max-width: 520px;">
+        <div class="work-modal-header">
+            <h3 class="work-modal-title">💾 データのバックアップ・移行</h3>
+            <button class="close-btn" onclick="closeBackupModal()">&times;</button>
+        </div>
+        <div class="backup-actions">
+            <div class="backup-section" id="cloudSyncSection">
+                <h5>☁️ Google Drive クラウド同期</h5>
+                <p>パソコンとスマホでデータを同期します。変更があると自動で Google Drive に保存されます。（Google Apps Script 使用・Cloud Console 不要）</p>
+                <div class="cloud-sync-status" id="cloudSyncStatus">状態: 未接続</div>
+                <div class="backup-btn-row">
+                    <button class="btn-green" id="cloudConnectBtn" onclick="connectGoogleDrive()">Google Drive に接続</button>
+                    <button class="btn-outline" id="cloudSaveBtn" onclick="saveToGoogleDriveNow()" disabled>今すぐ Google Drive に保存</button>
+                    <button class="btn-outline" id="cloudDisconnectBtn" onclick="disconnectGoogleDrive()" style="display:none;">切断</button>
+                </div>
+                <div class="cloud-sync-meta" id="cloudSyncMeta"></div>
+            </div>
+            <div class="backup-section">
+                <h5>📤 エクスポート（ダウンロード）</h5>
+                <p>現在のデータをファイルに保存します。JSONは完全バックアップ、CSVは表計算ソフトでも開けます。</p>
+                <div class="backup-btn-row">
+                    <button class="btn-green" onclick="exportDataJSON()">JSONでエクスポート</button>
+                    <button class="btn-blue" onclick="exportDataCSV()">CSVでエクスポート</button>
+                </div>
+            </div>
+            <div class="backup-section">
+                <h5>📥 インポート（復元）</h5>
+                <p>保存したファイルからデータを復元します。JSONは全データを上書き、CSVは収益・金庫データを追加します。</p>
+                <div class="backup-btn-row">
+                    <button class="btn-outline" onclick="document.getElementById('importJsonInput').click()">JSONをインポート</button>
+                    <button class="btn-outline" onclick="document.getElementById('importCsvInput').click()">CSVをインポート</button>
+                </div>
+                <input type="file" id="importJsonInput" accept=".json,application/json" style="display:none" onchange="importDataJSON(event)">
+                <input type="file" id="importCsvInput" accept=".csv,text/csv" style="display:none" onchange="importDataCSV(event)">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="work-modal-overlay" id="safeModal">
+    <div class="work-modal-content" style="max-width: 400px;">
+        <div class="work-modal-header">
+            <h3 class="work-modal-title">🏦 金庫に登録</h3>
+            <button class="close-btn" onclick="closeSafeModal()">&times;</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div>
+                <label style="font-size: 14px; font-weight: bold; color: #4a5568; margin-bottom: 5px; display: block;" class="safe-label">日付</label>
+                <input type="date" id="safeDateInput" style="width: 100%;">
+            </div>
+            <div>
+                <label style="font-size: 14px; font-weight: bold; color: #4a5568; margin-bottom: 5px; display: block;" class="safe-label">名前</label>
+                <input type="text" id="safeNameInput" placeholder="例：Amazonギフト" style="width: 100%;">
+            </div>
+            <div>
+                <label style="font-size: 14px; font-weight: bold; color: #4a5568; margin-bottom: 5px; display: block;" class="safe-label">ギフトコード</label>
+                <div style="display: flex; align-items: center; position: relative;">
+                    <input type="password" id="safeCodeInput" placeholder="例：ABCD-1234-EFGH" style="width: 100%; padding-right: 40px;">
+                    <button type="button" class="toggle-eye-btn" id="modalEyeBtn" onclick="toggleModalCode()" style="position: absolute; right: 5px;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                    </button>
+                </div>
+            </div>
+            <div>
+                <label style="font-size: 14px; font-weight: bold; color: #4a5568; margin-bottom: 5px; display: block;" class="safe-label">金額</label>
+                <input type="number" id="safeAmountInput" placeholder="金額（円）" min="0" style="width: 100%;">
+            </div>
+            <label style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: bold; color: #4a5568; cursor: pointer;" class="safe-label">
+                <input type="checkbox" id="safeUsedInput" class="safe-used-checkbox">
+                使用済みとして登録
+            </label>
+            <button class="btn-blue btn-submit" onclick="saveSafeData()">保存</button>
+        </div>
+    </div>
+</div>
+
+<div class="work-modal-overlay" id="myPageSettingsModal">
+    <div class="work-modal-content" style="max-width: 400px;">
+        <div class="work-modal-header">
+            <h3 class="work-modal-title">⚙️ マイページ設定</h3>
+            <button class="close-btn" onclick="closeMyPageSettings()">&times;</button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+            <div>
+                <label style="font-size: 14px; font-weight: bold; color: #4a5568; margin-bottom: 5px; display: block;" class="safe-label">背景画像 (バナー)</label>
+                <input type="file" id="settingBannerInput" accept="image/*" style="width: 100%; border: none; padding: 0;">
+                <div style="font-size: 11px; color: #718096; margin-top: 4px;">※選択しない場合は変更されません</div>
+            </div>
+            <div>
+                <label style="font-size: 14px; font-weight: bold; color: #4a5568; margin-bottom: 5px; display: block;" class="safe-label">アイコン画像</label>
+                <input type="file" id="settingIconInput" accept="image/*" style="width: 100%; border: none; padding: 0;">
+                <div style="font-size: 11px; color: #718096; margin-top: 4px;">※選択しない場合は変更されません</div>
+            </div>
+            <div>
+                <label style="font-size: 14px; font-weight: bold; color: #4a5568; margin-bottom: 5px; display: block;" class="safe-label">名前</label>
+                <input type="text" id="settingNameInput" placeholder="表示する名前" style="width: 100%;">
+            </div>
+            <div>
+                <label style="font-size: 14px; font-weight: bold; color: #4a5568; margin-bottom: 5px; display: block;" class="safe-label">金庫閲覧パスワード</label>
+                <div style="display: flex; align-items: center; position: relative;">
+                    <input type="password" id="settingPasswordInput" placeholder="未設定の場合はパスワード不要" style="width: 100%; padding-right: 40px;">
+                    <button type="button" class="toggle-eye-btn" id="myPagePasswordEyeBtn" onclick="toggleMyPagePassword()" style="position: absolute; right: 5px;">
+                        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                    </button>
+                </div>
+            </div>
+            <button class="btn-blue btn-submit" onclick="saveMyPageSettings()">保存</button>
+        </div>
+    </div>
+</div>
+
+<div class="work-modal-overlay" id="workModal">
+    <div class="work-modal-content">
+        <div class="work-modal-header">
+            <h3 class="work-modal-title" id="workModalTitle">ワークスペース</h3>
+            <button class="close-btn" onclick="closeWorkModal()">&times;</button>
+        </div>
+        
+        <div class="work-view" id="view-projects">
+            <h4 class="section-title">📁 グループの登録</h4>
+            <div class="input-group">
+                <input type="text" id="newGroupName" placeholder="例：物販、YouTube">
+                <button class="btn-blue" onclick="addGroup()">追加</button>
+            </div>
+            
+            <h4 class="section-title">📄 項目の登録</h4>
+            <div class="input-group">
+                <select id="projectGroupSelect"></select>
+                <input type="text" id="newProjectName" placeholder="項目名">
+                <button class="btn-blue" onclick="addProject()">追加</button>
+            </div>
+            
+            <h4 class="section-title">登録済みの項目一覧（移動・削除）</h4>
+            <div class="list-box" id="projectListContainer"></div>
+        </div>
+
+        <div class="work-view" id="view-goals">
+            <h4 class="section-title">🎯 月別目標金額の設定</h4>
+            <div class="input-group">
+                <input type="month" id="goalMonthSelect" onchange="loadGoalForMonth()">
+                <input type="number" id="goalAmount" placeholder="目標金額（円）" min="0">
+                <button class="btn-blue" onclick="saveGoal()">保存</button>
+            </div>
+        </div>
+        
+        <div class="work-view" id="view-monthly">
+            <div class="selector-row">
+                <select id="monthlyProjSelect" onchange="renderMonthlyDays()"></select>
+                <input type="month" id="monthlyMonthSelect" onchange="renderMonthlyDays()">
+            </div>
+            <div class="list-box" id="monthlyDaysContainer"></div>
+            <button class="btn-blue btn-submit" onclick="saveMonthlyRevenue()">1ヶ月分の収益を一括保存</button>
+        </div>
+        
+        <div class="work-view" id="view-daily">
+            <div class="selector-row">
+                <input type="date" id="dailyDateSelect" onchange="renderDailyFields()" style="width: 100%;">
+            </div>
+            <div class="list-box" id="dailyFieldsContainer"></div>
+            <button class="btn-blue btn-submit" onclick="saveDailyRevenue()">この日の収益を一括保存</button>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="header-wrapper">
+        <div class="header-top">
+            <div class="left-header">
+                <button class="menu-btn" onclick="toggleSidebar()">&#9776;</button>
+                <h1 class="title"> 収益管理カレンダー</h1>
+            </div>
+            <div class="right-header">
+                
+                <div class="filter-container" id="trendsUnitContainer" style="display: none;">
+                    <button class="btn-filter" onclick="toggleTrendsUnitMenu(event)">📏 単位切替</button>
+                    <div id="trendsUnitMenu" class="filter-menu-popup" style="width: 140px;">
+                        <label class="filter-item"><input type="radio" name="trendsUnit" value="day" class="filter-cb" checked onchange="changeTrendsUnit('day')"><span class="icon"></span>日単位</label>
+                        <label class="filter-item"><input type="radio" name="trendsUnit" value="week" class="filter-cb" onchange="changeTrendsUnit('week')"><span class="icon"></span>週単位</label>
+                        <label class="filter-item"><input type="radio" name="trendsUnit" value="month" class="filter-cb" onchange="changeTrendsUnit('month')"><span class="icon"></span>月単位</label>
+                        <label class="filter-item"><input type="radio" name="trendsUnit" value="year" class="filter-cb" onchange="changeTrendsUnit('year')"><span class="icon"></span>年単位</label>
+                    </div>
+                </div>
+
+                <div class="filter-container" id="averageUnitContainer" style="display: none;">
+                    <button class="btn-filter" onclick="toggleAverageUnitMenu(event)">📏 単位切替</button>
+                    <div id="averageUnitMenu" class="filter-menu-popup" style="width: 140px;">
+                        <label class="filter-item"><input type="radio" name="averageUnit" value="day" class="filter-cb" checked onchange="changeAverageUnit('day')"><span class="icon"></span>日単位</label>
+                        <label class="filter-item"><input type="radio" name="averageUnit" value="week" class="filter-cb" onchange="changeAverageUnit('week')"><span class="icon"></span>週単位</label>
+                        <label class="filter-item"><input type="radio" name="averageUnit" value="month" class="filter-cb" onchange="changeAverageUnit('month')"><span class="icon"></span>月単位</label>
+                    </div>
+                </div>
+
+                <button class="btn-filter" onclick="toggleDarkMode()">🌓 表示切替</button>
+                
+                <div class="filter-container" id="calendarFilterContainer">
+                    <button class="btn-filter" onclick="toggleFilterMenu(event)">👁️ 項目切替</button>
+                    <div id="filterMenu" class="filter-menu-popup">
+                        <div id="filterMenuContent"></div>
+                    </div>
+                </div>
+
+                <div class="filter-container" id="trendsFilterContainer" style="display: none;">
+                    <button class="btn-filter" onclick="toggleTrendsFilterMenu(event)">👁️ 項目切替</button>
+                    <div id="trendsFilterMenu" class="filter-menu-popup">
+                        <div id="trendsFilterMenuContent"></div>
+                    </div>
+                </div>
+
+                <div class="filter-container" id="ratioFilterContainer" style="display: none;">
+                    <button class="btn-filter" onclick="toggleRatioFilterMenu(event)">👁️ 項目切替</button>
+                    <div id="ratioRatioMenu" class="filter-menu-popup">
+                        <div id="ratioFilterMenuContent"></div>
+                    </div>
+                </div>
+
+                <div class="filter-container" id="averageFilterContainer" style="display: none;">
+                    <button class="btn-filter" onclick="toggleAverageFilterMenu(event)">👁️ 項目切替</button>
+                    <div id="averageFilterMenu" class="filter-menu-popup">
+                        <div id="averageFilterMenuContent"></div>
+                    </div>
+                </div>
+
+                <button class="btn-filter" id="btnSafeRegister" style="display: none;" onclick="openSafeModal()">➕ 番号登録</button>
+
+                <div class="monthly-total-container" id="monthlyTotalContainer">
+                    <div class="monthly-total" id="monthlyTotalDisplay">0月の合計: ¥0</div>
+                </div>
+
+                <div class="monthly-total" id="trendsTotalDisplay" style="display: none;">合計: ¥0</div>
+                <div class="monthly-total" id="ratioTotalDisplay" style="display: none;">合計: ¥0</div>
+                <div class="monthly-total-container" id="safeTotalContainer" style="display: none;">
+                    <div class="monthly-total safe-total-unused" id="safeUnusedTotalDisplay">未使用: ¥0</div>
+                    <div class="monthly-total safe-total-used" id="safeUsedTotalDisplay">使用済み: ¥0</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="header-bottom">
+            <div id="headerBottomLeft">
+                <div class="monthly-total" id="trendsAverageDisplay" style="display: none; margin: 0; min-width: 140px;">日平均: ¥0</div>
+            </div>
+            
+            <div id="headerBottomRight" style="display: flex; gap: 8px;">
+                <div id="trendsDateControls" style="display: none; align-items: center; gap: 8px;">
+                    <button class="btn-filter" id="trendsBtnPrevMonth" onclick="adjustTrendsDate('month', -1)">◀◀</button>
+                    <button class="btn-filter" id="trendsBtnPrev" onclick="adjustTrendsDate('step', -1)">◀</button>
+                    <input type="date" id="trendsMonthSelector" onchange="renderTrendsChart()" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e0;">
+                    <span id="trendsDateLabel" style="display:none; font-weight:bold; color:#4a5568; padding: 0 10px;"></span>
+                    <button class="btn-filter" id="trendsBtnNext" onclick="adjustTrendsDate('step', 1)">▶</button>
+                    <button class="btn-filter" id="trendsBtnNextMonth" onclick="adjustTrendsDate('month', 1)">▶▶</button>
+                </div>
+                <div id="ratioDateControls" style="display: none; align-items: center; gap: 8px;">
+                    <input type="month" id="ratioMonthSelector" onchange="renderRatioChart()" style="padding: 10px; border-radius: 8px; border: 1px solid #cbd5e0;">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="calendarView">
+        <div id="calendar"></div>
+    </div>
+
+    <div id="trendsView" style="display: none; flex-direction: column; flex: 1; min-height: 0;">
+        <div id="chartCanvasContainer">
+            <div class="chart-scroll-wrapper" id="chartScrollWrapper">
+                <canvas id="monthlyLineChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div id="ratioView" style="display: none; flex-direction: column; flex: 1; min-height: 0;">
+        <div id="ratioCanvasContainer" style="flex-direction: row; padding: 20px; align-items: center;">
+            <div style="flex: 1; height: 100%; position: relative;">
+                <canvas id="ratioPieChart"></canvas>
+            </div>
+            <div id="ratioTableContainer" style="flex: 1; height: 100%; overflow-y: auto; padding-left: 20px;">
+            </div>
+        </div>
+    </div>
+
+    <div id="averageView" style="display: none; flex-direction: column; flex: 1; min-height: 0;">
+        <div id="averageCardsContainer">
+            <div id="averageCardsGrid" class="average-cards-grid unit-day"></div>
+        </div>
+    </div>
+
+    <div id="safeView" style="display: none; flex-direction: column; flex: 1; min-height: 0;">
+        <div id="safeTableContainer"></div>
+    </div>
+
+    <div id="myPageView" style="display: none; flex-direction: column;">
+        <div class="mypage-banner" id="myPageBanner"></div>
+        <div class="mypage-profile-section">
+            <div class="mypage-left">
+                <div class="mypage-icon" id="myPageIcon"></div>
+                <div class="mypage-name" id="myPageName">ゲスト</div>
+            </div>
+            <div class="mypage-right">
+                <button class="btn-settings" onclick="openMyPageSettings()">⚙️ 設定</button>
+            </div>
+        </div>
+        <div class="mypage-analytics">
+            <section class="mypage-chart-section">
+                <div class="mypage-chart-header">
+                    <div>
+                        <h3 class="mypage-chart-title">📅 今日の収益</h3>
+                        <div class="mypage-chart-subtext" id="myPageTodayDateLabel"></div>
+                    </div>
+                    <div class="mypage-chart-actions">
+                        <div class="filter-container">
+                            <button class="btn-filter" onclick="toggleMyPageTodayFilterMenu(event)">項目切替</button>
+                            <div id="myPageTodayFilterMenu" class="filter-menu-popup">
+                                <div id="myPageTodayFilterMenuContent"></div>
+                            </div>
+                        </div>
+                        <button class="btn-blue" onclick="openTodayRevenueModal()" style="height: 40px; padding: 0 16px; border-radius: 8px; font-size: 14px; display: flex; align-items: center; gap: 6px; white-space: nowrap; cursor: pointer; font-weight: bold;">
+                            ＋ 収益入力
+                        </button>
+                        <div class="monthly-total mypage-chart-total" id="myPageTodayTotalDisplay">本日: ¥0</div>
+                    </div>
+                </div>
+                <div id="myPageTodayList" style="padding: 0 4px 8px;"></div>
+            </section>
+
+            <section class="mypage-chart-section">
+                <div class="mypage-chart-header">
+                    <div>
+                        <h3 class="mypage-chart-title">収益割合</h3>
+                        <div class="mypage-chart-subtext" id="myPageRatioPeriodLabel"></div>
+                    </div>
+                    <div class="mypage-chart-actions">
+                        <div class="filter-container">
+                            <button class="btn-filter" onclick="toggleMyPageRatioFilterMenu(event)">項目切替</button>
+                            <div id="myPageRatioFilterMenu" class="filter-menu-popup">
+                                <div id="myPageRatioFilterMenuContent"></div>
+                            </div>
+                        </div>
+                        <div class="monthly-total mypage-chart-total" id="myPageRatioTotalDisplay">合計: ¥0</div>
+                    </div>
+                </div>
+                <div class="mypage-chart-body mypage-ratio-body">
+                    <div class="mypage-ratio-canvas">
+                        <canvas id="myPageRatioPieChart"></canvas>
+                    </div>
+                    <div class="mypage-ratio-table" id="myPageRatioTableContainer"></div>
+                </div>
+            </section>
+
+            <section class="mypage-chart-section">
+                <div class="mypage-chart-header">
+                    <div>
+                        <h3 class="mypage-chart-title">収益推移</h3>
+                        <div class="mypage-chart-subtext" id="myPageTrendsPeriodLabel"></div>
+                    </div>
+                    <div class="mypage-chart-actions">
+                        <div class="filter-container">
+                            <button class="btn-filter" onclick="toggleMyPageTrendsFilterMenu(event)">項目切替</button>
+                            <div id="myPageTrendsFilterMenu" class="filter-menu-popup">
+                                <div id="myPageTrendsFilterMenuContent"></div>
+                            </div>
+                        </div>
+                        <div class="monthly-total mypage-chart-total" id="myPageTrendsTotalDisplay">合計: ¥0</div>
+                        <div class="monthly-total mypage-chart-total" id="myPageTrendsAverageDisplay">日平均: ¥0</div>
+                    </div>
+                </div>
+                <div class="mypage-chart-body mypage-trends-body">
+                    <div class="mypage-trends-canvas">
+                        <canvas id="myPageTrendsLineChart"></canvas>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<div class="work-modal-overlay" id="revenueModal">
+    <div class="work-modal-content" style="max-width: 460px;">
+        <div class="work-modal-header">
+            <h3 class="work-modal-title" id="modalDateTitle">日付の詳細</h3>
+            <button class="close-btn" onclick="closeModal()">&times;</button>
+        </div>
+        
+        <div id="dayPieChartContainer" style="width: 100%; height: 200px; margin-bottom: 20px; position: relative; display: none;">
+            <canvas id="dayPieChart"></canvas>
+        </div>
+
+        <ul class="revenue-list" id="revenueList"></ul>
+        <div class="input-group">
+            <select id="itemProjSelect"></select>
+            <input type="number" id="itemAmount" placeholder="金額（円）" min="0">
+            <button class="btn-blue" onclick="addRevenue()">追加</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    Chart.register(ChartDataLabels);
+
+    let calendar;
+    let selectedDateStr = "";
+    let monthlyLineChartInstance = null;
+    let dayPieChartInstance = null; 
+    let ratioPieChartInstance = null;
+    let averageChartInstances = [];
+    let myPageRatioPieChartInstance = null;
+    let myPageTrendsLineChartInstance = null;
+    let currentTrendsUnit = 'day';
+    let currentAverageUnit = 'day';
+    let editingSafeId = null; 
+    let previousMonthTotals = {};
+
+    function loadData() { return JSON.parse(localStorage.getItem('my_revenue_data')) || {}; }
+    function saveData(data) { localStorage.setItem('my_revenue_data', JSON.stringify(data)); }
+    
+    function loadGroups() {
+        let groups = JSON.parse(localStorage.getItem('my_revenue_groups'));
+        if (!groups || groups.length === 0) {
+            groups = ['未分類']; 
+            localStorage.setItem('my_revenue_groups', JSON.stringify(groups));
+        }
+        return groups;
+    }
+    function saveGroups(groups) { localStorage.setItem('my_revenue_groups', JSON.stringify(groups)); }
+
+    function loadProjects() {
+        let projs = JSON.parse(localStorage.getItem('my_revenue_projects')) || [];
+        if (projs.length > 0 && typeof projs[0] === 'string') {
+            projs = projs.map(p => ({ name: p, group: '未分類' }));
+            saveProjects(projs);
+        }
+        return projs;
+    }
+    function saveProjects(projs) { localStorage.setItem('my_revenue_projects', JSON.stringify(projs)); }
+
+    function loadGoals() { return JSON.parse(localStorage.getItem('my_revenue_goals')) || {}; }
+    function saveGoals(goals) { localStorage.setItem('my_revenue_goals', JSON.stringify(goals)); }
+
+    function loadGoalCelebrated() { return JSON.parse(localStorage.getItem('my_revenue_goal_celebrated')) || {}; }
+    function saveGoalCelebrated(data) { localStorage.setItem('my_revenue_goal_celebrated', JSON.stringify(data)); }
+
+    function getAllAppData() {
+        return {
+            version: 1,
+            exportedAt: new Date().toISOString(),
+            data: loadData(),
+            groups: loadGroups(),
+            projects: loadProjects(),
+            goals: loadGoals(),
+            safe: loadSafeData(),
+            profile: loadProfile(),
+            darkmode: localStorage.getItem('my_revenue_darkmode') || 'disabled'
+        };
+    }
+
+    function restoreAllAppData(backup) {
+        if (backup.data) saveData(backup.data);
+        if (backup.groups) saveGroups(backup.groups);
+        if (backup.projects) saveProjects(backup.projects);
+        if (backup.goals) saveGoals(backup.goals);
+        if (backup.safe) saveSafeDataStorage(backup.safe);
+        if (backup.profile) saveProfile(backup.profile);
+        if (backup.darkmode) {
+            localStorage.setItem('my_revenue_darkmode', backup.darkmode);
+            document.body.classList.toggle('dark-mode', backup.darkmode === 'enabled');
+        }
+    }
+
+    function downloadFile(content, filename, mimeType) {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+    }
+
+    function openBackupModal() {
+        if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+        document.getElementById('backupModal').style.display = 'flex';
+        if (typeof updateCloudSyncUI === 'function') updateCloudSyncUI();
+    }
+
+    function closeBackupModal() {
+        document.getElementById('backupModal').style.display = 'none';
+    }
+
+    function exportDataJSON() {
+        const backup = getAllAppData();
+        const dateStr = new Date().toISOString().slice(0, 10);
+        downloadFile(JSON.stringify(backup, null, 2), `収益カレンダー_バックアップ_${dateStr}.json`, 'application/json');
+    }
+
+    function exportDataCSV() {
+        const data = loadData();
+        const safe = loadSafeData();
+        const goals = loadGoals();
+        const rows = ['種別,日付,項目名,金額,ギフトコード,使用済み,目標月'];
+
+        for (const dateStr in data) {
+            (data[dateStr] || []).forEach(item => {
+                rows.push(['収益', dateStr, csvEscape(item.name), item.amount, '', '', ''].join(','));
+            });
+        }
+
+        safe.forEach(item => {
+            rows.push(['金庫', item.date, csvEscape(item.name), item.amount, csvEscape(item.code), item.used ? 'はい' : 'いいえ', ''].join(','));
+        });
+
+        for (const monthStr in goals) {
+            rows.push(['目標', '', '', goals[monthStr], '', '', monthStr].join(','));
+        }
+
+        const dateStr = new Date().toISOString().slice(0, 10);
+        downloadFile('\uFEFF' + rows.join('\n'), `収益カレンダー_データ_${dateStr}.csv`, 'text/csv;charset=utf-8');
+    }
+
+    function csvEscape(str) {
+        const s = String(str || '');
+        if (s.includes(',') || s.includes('"') || s.includes('\n')) {
+            return '"' + s.replace(/"/g, '""') + '"';
+        }
+        return s;
+    }
+
+    function parseCSVLine(line) {
+        const result = [];
+        let current = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (inQuotes) {
+                if (ch === '"') {
+                    if (line[i + 1] === '"') { current += '"'; i++; }
+                    else inQuotes = false;
+                } else current += ch;
+            } else {
+                if (ch === '"') inQuotes = true;
+                else if (ch === ',') { result.push(current); current = ''; }
+                else current += ch;
+            }
+        }
+        result.push(current);
+        return result;
+    }
+
+    function importDataJSON(event) {
+        const file = event.target.files[0];
+        event.target.value = '';
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const backup = JSON.parse(e.target.result);
+                if (!backup || typeof backup !== 'object') throw new Error('invalid');
+                if (!confirm('JSONファイルの内容で既存データをすべて上書きします。よろしいですか？')) return;
+                restoreAllAppData(backup);
+                refreshAfterImport();
+                alert('JSONデータのインポートが完了しました！');
+                closeBackupModal();
+            } catch (err) {
+                alert('JSONファイルの読み込みに失敗しました。ファイル形式を確認してください。');
+            }
+        };
+        reader.readAsText(file);
+    }
+
+    function importDataCSV(event) {
+        const file = event.target.files[0];
+        event.target.value = '';
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            try {
+                const text = e.target.result.replace(/^\uFEFF/, '');
+                const lines = text.split(/\r?\n/).filter(l => l.trim());
+                if (lines.length <= 1) { alert('CSVにデータがありません。'); return; }
+
+                const data = loadData();
+                const safe = loadSafeData();
+                const goals = loadGoals();
+                let revenueCount = 0, safeCount = 0, goalCount = 0;
+
+                for (let i = 1; i < lines.length; i++) {
+                    const cols = parseCSVLine(lines[i]);
+                    const type = cols[0];
+                    if (type === '収益') {
+                        const dateStr = cols[1];
+                        const name = cols[2];
+                        const amount = parseInt(cols[3], 10);
+                        if (!dateStr || !name || isNaN(amount)) continue;
+                        if (!data[dateStr]) data[dateStr] = [];
+                        const idx = data[dateStr].findIndex(item => item.name === name);
+                        if (idx !== -1) data[dateStr][idx].amount += amount;
+                        else data[dateStr].push({ name, amount });
+                        revenueCount++;
+                    } else if (type === '金庫') {
+                        const date = cols[1];
+                        const name = cols[2];
+                        const amount = parseInt(cols[3], 10);
+                        const code = cols[4] || '';
+                        const used = cols[5] === 'はい';
+                        if (!date || !name || isNaN(amount)) continue;
+                        safe.push({ id: Date.now() + i, date, name, code, amount, used });
+                        safeCount++;
+                    } else if (type === '目標') {
+                        const amount = parseInt(cols[3], 10);
+                        const monthStr = cols[6];
+                        if (monthStr && !isNaN(amount) && amount > 0) {
+                            goals[monthStr] = amount;
+                            goalCount++;
+                        }
+                    }
+                }
+
+                saveData(data);
+                safe.sort((a, b) => new Date(b.date) - new Date(a.date));
+                saveSafeDataStorage(safe);
+                saveGoals(goals);
+                refreshAfterImport();
+                alert(`CSVインポート完了\n収益: ${revenueCount}件 / 金庫: ${safeCount}件 / 目標: ${goalCount}件`);
+                closeBackupModal();
+            } catch (err) {
+                alert('CSVファイルの読み込みに失敗しました。ファイル形式を確認してください。');
+            }
+        };
+        reader.readAsText(file, 'UTF-8');
+    }
+
+    function refreshAfterImport() {
+        updateGroupDropdowns();
+        renderProjectsList();
+        renderFilterMenu();
+        renderTrendsFilterMenu();
+        renderRatioFilterMenu();
+        renderAverageFilterMenu();
+        refreshCalendar();
+        if (document.getElementById('safeView').style.display === 'flex') renderSafeTable();
+        if (document.getElementById('myPageView').style.display === 'flex') {
+            renderMyPage();
+            renderMyPageRatioFilterMenu();
+            renderMyPageTrendsFilterMenu();
+            renderMyPageTodayFilterMenu();
+            renderMyPageTodaySection();
+            renderMyPageCharts();
+        }
+        if (document.getElementById('trendsView').style.display === 'flex') renderTrendsChart();
+        if (document.getElementById('ratioView').style.display === 'flex') renderRatioChart();
+        if (document.getElementById('averageView').style.display === 'flex') renderAverageCharts();
+    }
+
+    function triggerGoalCelebration() {
+        const overlay = document.getElementById('celebrationOverlay');
+        overlay.classList.add('active');
+        setTimeout(() => overlay.classList.remove('active'), 4000);
+
+        if (typeof confetti === 'function') {
+            const colors = ['#ffd700', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7', '#fd79a8'];
+            const duration = 3500;
+            const end = Date.now() + duration;
+            confetti({ particleCount: 120, spread: 80, origin: { y: 0.55 }, colors });
+            (function burst() {
+                confetti({ particleCount: 4, angle: 60, spread: 60, origin: { x: 0, y: 0.65 }, colors });
+                confetti({ particleCount: 4, angle: 120, spread: 60, origin: { x: 1, y: 0.65 }, colors });
+                if (Date.now() < end) requestAnimationFrame(burst);
+            })();
+        }
+    }
+
+    function checkGoalAchievement(monthKey, total, goal) {
+        const celebrated = loadGoalCelebrated();
+        const prev = previousMonthTotals[monthKey];
+        previousMonthTotals[monthKey] = total;
+
+        if (goal <= 0 || total < goal) {
+            if (celebrated[monthKey]) {
+                delete celebrated[monthKey];
+                saveGoalCelebrated(celebrated);
+            }
+            return;
+        }
+
+        if (prev !== undefined && prev < goal && total >= goal) {
+            if (!celebrated[monthKey]) {
+                celebrated[monthKey] = true;
+                saveGoalCelebrated(celebrated);
+                setTimeout(() => triggerGoalCelebration(), 300);
+            }
+        } else if (total >= goal) {
+            celebrated[monthKey] = true;
+            saveGoalCelebrated(celebrated);
+        }
+    }
+
+    function updateSafeTotalsDisplay(unusedAmount, usedAmount) {
+        document.getElementById('safeUnusedTotalDisplay').textContent = `未使用: ¥${unusedAmount.toLocaleString()}`;
+        document.getElementById('safeUsedTotalDisplay').textContent = `使用済み: ¥${usedAmount.toLocaleString()}`;
+    }
+
+    function toggleSafeUsed(id) {
+        const data = loadSafeData();
+        const item = data.find(d => d.id === id);
+        if (!item) return;
+        item.used = !item.used;
+        saveSafeDataStorage(data);
+        renderSafeTable();
+    }
+
+    /* --- 金庫用データロード/セーブ --- */
+    function loadSafeData() {
+        const data = JSON.parse(localStorage.getItem('my_revenue_safe')) || [];
+        return data.map(item => ({ ...item, used: !!item.used }));
+    }
+    function saveSafeDataStorage(data) { localStorage.setItem('my_revenue_safe', JSON.stringify(data)); }
+
+    /* --- マイページ用データロード/セーブ --- */
+    function loadProfile() {
+        return JSON.parse(localStorage.getItem('my_revenue_profile')) || { banner: '', icon: '', name: 'ゲスト', password: '' };
+    }
+    function saveProfile(data) {
+        localStorage.setItem('my_revenue_profile', JSON.stringify(data));
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        if (localStorage.getItem('my_revenue_darkmode') === 'enabled') {
+            document.body.classList.add('dark-mode');
+        }
+
+        const today = new Date();
+        const yearMonthStr = today.toISOString().slice(0, 7);
+        const firstDayOfMonth = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-01`;
+        
+        document.getElementById('monthlyMonthSelect').value = yearMonthStr;
+        document.getElementById('ratioMonthSelector').value = yearMonthStr;
+        document.getElementById('dailyDateSelect').value = today.toISOString().split('T')[0];
+        document.getElementById('goalMonthSelect').value = yearMonthStr; 
+        
+        const trendsSelector = document.getElementById('trendsMonthSelector');
+        if (trendsSelector) { trendsSelector.value = firstDayOfMonth; }
+
+        const calendarEl = document.getElementById('calendar');
+        calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            locale: 'ja',
+            height: '100%', 
+            fixedWeekCount: false, 
+            headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+            dateClick: function(info) { openModal(info.dateStr); },
+            eventClick: function(info) { openModal(info.event.startStr); },
+            datesSet: function() { updateMonthlyTotal(); }
+        });
+        calendar.render();
+        
+        renderFilterMenu();
+        renderTrendsFilterMenu();
+        renderRatioFilterMenu();
+        renderAverageFilterMenu();
+        renderMyPage();
+
+        window.addEventListener('resize', function() {
+            if (document.getElementById('trendsView').style.display === 'flex') {
+                renderTrendsChart(false);
+            } else if (document.getElementById('ratioView').style.display === 'flex') {
+                renderRatioChart();
+            } else if (document.getElementById('averageView').style.display === 'flex') {
+                renderAverageCharts();
+            } else if (document.getElementById('myPageView').style.display === 'flex') {
+                renderMyPageCharts();
+            }
+        });
+
+        startGoogleDriveAutoSync();
+    });
+
+    document.addEventListener('click', function(e) {
+        const filterContainer = e.target.closest('.filter-container');
+        if (!filterContainer) {
+            document.querySelectorAll('.filter-menu-popup').forEach(m => m.classList.remove('open'));
+        }
+    });
+
+    function toggleSidebar() {
+        document.getElementById('sidebar').classList.toggle('open');
+        document.getElementById('sidebarOverlay').classList.toggle('open');
+    }
+
+    function toggleDarkMode() {
+        document.body.classList.toggle('dark-mode');
+        const isDark = document.body.classList.contains('dark-mode');
+        localStorage.setItem('my_revenue_darkmode', isDark ? 'enabled' : 'disabled');
+        
+        if (calendar) refreshCalendar();
+        if (document.getElementById('trendsView').style.display === 'flex') renderTrendsChart(false);
+        if (document.getElementById('ratioView').style.display === 'flex') renderRatioChart();
+        if (document.getElementById('averageView').style.display === 'flex') renderAverageCharts();
+        if (document.getElementById('myPageView').style.display === 'flex') { renderMyPageCharts(); renderMyPageTodaySection(); }
+    }
+
+    function toggleAverageUnitMenu(e) {
+        if(e) e.stopPropagation();
+        document.querySelectorAll('.filter-menu-popup').forEach(m => {
+            if(m.id !== 'averageUnitMenu') m.classList.remove('open');
+        });
+        document.getElementById('averageUnitMenu').classList.toggle('open');
+    }
+
+    function changeAverageUnit(unit) {
+        currentAverageUnit = unit;
+        document.getElementById('averageUnitMenu').classList.remove('open');
+        const grid = document.getElementById('averageCardsGrid');
+        if (grid) {
+            grid.classList.remove('unit-day', 'unit-week', 'unit-month');
+            grid.classList.add('unit-' + unit);
+        }
+        renderAverageCharts();
+    }
+
+    function toggleTrendsUnitMenu(e) {
+        if(e) e.stopPropagation();
+        document.querySelectorAll('.filter-menu-popup').forEach(m => {
+            if(m.id !== 'trendsUnitMenu') m.classList.remove('open');
+        });
+        document.getElementById('trendsUnitMenu').classList.toggle('open');
+    }
+
+    function changeTrendsUnit(unit) {
+        currentTrendsUnit = unit;
+        document.getElementById('trendsUnitMenu').classList.remove('open');
+        
+        const btnPrevMonth = document.getElementById('trendsBtnPrevMonth');
+        const btnNextMonth = document.getElementById('trendsBtnNextMonth');
+        const dateInput = document.getElementById('trendsMonthSelector');
+        const dateLabel = document.getElementById('trendsDateLabel');
+
+        if (unit === 'day') {
+            btnPrevMonth.style.display = 'inline-block';
+            btnNextMonth.style.display = 'inline-block';
+            dateInput.style.display = 'inline-block';
+            dateLabel.style.display = 'none';
+        } else {
+            btnPrevMonth.style.display = 'none';
+            btnNextMonth.style.display = 'none';
+            dateInput.style.display = 'none';
+            dateLabel.style.display = 'inline-block';
+        }
+        renderTrendsChart();
+    }
+
+    function showCalendarView() {
+        if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+        document.getElementById('calendarView').style.display = 'block';
+        document.getElementById('trendsView').style.display = 'none';
+        document.getElementById('ratioView').style.display = 'none';
+        document.getElementById('averageView').style.display = 'none';
+        document.getElementById('safeView').style.display = 'none';
+        document.getElementById('myPageView').style.display = 'none';
+        
+        document.getElementById('monthlyTotalContainer').style.display = 'flex';
+        document.getElementById('trendsTotalDisplay').style.display = 'none'; const avg=document.getElementById('trendsAverageDisplay'); if(avg) avg.style.display='none';
+        document.getElementById('ratioTotalDisplay').style.display = 'none';
+        document.getElementById('safeTotalContainer').style.display = 'none';
+        
+        document.getElementById('trendsDateControls').style.display = 'none';
+        document.getElementById('ratioDateControls').style.display = 'none';
+        
+        document.getElementById('calendarFilterContainer').style.display = 'block';
+        document.getElementById('trendsFilterContainer').style.display = 'none';
+        document.getElementById('ratioFilterContainer').style.display = 'none';
+        document.getElementById('averageFilterContainer').style.display = 'none';
+        document.getElementById('trendsUnitContainer').style.display = 'none';
+        document.getElementById('averageUnitContainer').style.display = 'none';
+        document.getElementById('btnSafeRegister').style.display = 'none';
+
+        if(calendar) { setTimeout(() => { calendar.updateSize(); }, 50); }
+    }
+
+    function showTrendsView() {
+        if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+        document.getElementById('calendarView').style.display = 'none';
+        document.getElementById('trendsView').style.display = 'flex';
+        document.getElementById('ratioView').style.display = 'none';
+        document.getElementById('averageView').style.display = 'none';
+        document.getElementById('safeView').style.display = 'none';
+        document.getElementById('myPageView').style.display = 'none';
+        
+        document.getElementById('monthlyTotalContainer').style.display = 'none';
+        document.getElementById('trendsTotalDisplay').style.display = 'flex'; document.getElementById('trendsAverageDisplay').style.display = 'flex';
+        document.getElementById('ratioTotalDisplay').style.display = 'none';
+        document.getElementById('safeTotalContainer').style.display = 'none';
+        
+        document.getElementById('trendsDateControls').style.display = 'flex';
+        document.getElementById('ratioDateControls').style.display = 'none';
+        
+        document.getElementById('calendarFilterContainer').style.display = 'none';
+        document.getElementById('trendsFilterContainer').style.display = 'block';
+        document.getElementById('ratioFilterContainer').style.display = 'none';
+        document.getElementById('averageFilterContainer').style.display = 'none';
+        document.getElementById('trendsUnitContainer').style.display = 'block';
+        document.getElementById('averageUnitContainer').style.display = 'none';
+        document.getElementById('btnSafeRegister').style.display = 'none';
+
+        renderTrendsFilterMenu();
+        setTimeout(() => { renderTrendsChart(true); }, 100);
+    }
+
+    function showRatioView() {
+        if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+        document.getElementById('calendarView').style.display = 'none';
+        document.getElementById('trendsView').style.display = 'none';
+        document.getElementById('ratioView').style.display = 'flex';
+        document.getElementById('averageView').style.display = 'none';
+        document.getElementById('safeView').style.display = 'none';
+        document.getElementById('myPageView').style.display = 'none';
+        
+        document.getElementById('monthlyTotalContainer').style.display = 'none';
+        document.getElementById('trendsTotalDisplay').style.display = 'none'; const avg=document.getElementById('trendsAverageDisplay'); if(avg) avg.style.display='none';
+        document.getElementById('ratioTotalDisplay').style.display = 'flex';
+        document.getElementById('safeTotalContainer').style.display = 'none';
+        
+        document.getElementById('trendsDateControls').style.display = 'none';
+        document.getElementById('ratioDateControls').style.display = 'flex';
+        
+        document.getElementById('calendarFilterContainer').style.display = 'none';
+        document.getElementById('trendsFilterContainer').style.display = 'none';
+        document.getElementById('ratioFilterContainer').style.display = 'block';
+        document.getElementById('averageFilterContainer').style.display = 'none';
+        document.getElementById('trendsUnitContainer').style.display = 'none';
+        document.getElementById('averageUnitContainer').style.display = 'none';
+        document.getElementById('btnSafeRegister').style.display = 'none';
+
+        renderRatioFilterMenu();
+        renderRatioChart();
+    }
+
+    function showAverageView() {
+        if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+        document.getElementById('calendarView').style.display = 'none';
+        document.getElementById('trendsView').style.display = 'none';
+        document.getElementById('ratioView').style.display = 'none';
+        document.getElementById('averageView').style.display = 'flex';
+        document.getElementById('safeView').style.display = 'none';
+        document.getElementById('myPageView').style.display = 'none';
+        
+        document.getElementById('monthlyTotalContainer').style.display = 'none';
+        document.getElementById('trendsTotalDisplay').style.display = 'none';
+        const avgEl = document.getElementById('trendsAverageDisplay'); if(avgEl) avgEl.style.display='none';
+        document.getElementById('ratioTotalDisplay').style.display = 'none';
+        document.getElementById('safeTotalContainer').style.display = 'none';
+        
+        document.getElementById('trendsDateControls').style.display = 'none';
+        document.getElementById('ratioDateControls').style.display = 'none';
+        
+        document.getElementById('calendarFilterContainer').style.display = 'none';
+        document.getElementById('trendsFilterContainer').style.display = 'none';
+        document.getElementById('ratioFilterContainer').style.display = 'none';
+        document.getElementById('averageFilterContainer').style.display = 'block';
+        document.getElementById('trendsUnitContainer').style.display = 'none';
+        document.getElementById('averageUnitContainer').style.display = 'block';
+        document.getElementById('btnSafeRegister').style.display = 'none';
+
+        const grid = document.getElementById('averageCardsGrid');
+        if (grid) {
+            grid.classList.remove('unit-day', 'unit-week', 'unit-month');
+            grid.classList.add('unit-' + currentAverageUnit);
+        }
+        renderAverageFilterMenu();
+        setTimeout(() => { renderAverageCharts(); }, 100);
+    }
+
+    /* --- 金庫画面の表示 --- */
+    function showSafeView() {
+        if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+        document.getElementById('calendarView').style.display = 'none';
+        document.getElementById('trendsView').style.display = 'none';
+        document.getElementById('ratioView').style.display = 'none';
+        document.getElementById('averageView').style.display = 'none';
+        document.getElementById('safeView').style.display = 'flex';
+        document.getElementById('myPageView').style.display = 'none';
+        
+        document.getElementById('monthlyTotalContainer').style.display = 'none';
+        document.getElementById('trendsTotalDisplay').style.display = 'none';
+        const avg = document.getElementById('trendsAverageDisplay'); if(avg) avg.style.display='none';
+        document.getElementById('ratioTotalDisplay').style.display = 'none';
+        document.getElementById('safeTotalContainer').style.display = 'flex';
+        
+        document.getElementById('trendsDateControls').style.display = 'none';
+        document.getElementById('ratioDateControls').style.display = 'none';
+        
+        document.getElementById('calendarFilterContainer').style.display = 'none';
+        document.getElementById('trendsFilterContainer').style.display = 'none';
+        document.getElementById('ratioFilterContainer').style.display = 'none';
+        document.getElementById('averageFilterContainer').style.display = 'none';
+        document.getElementById('trendsUnitContainer').style.display = 'none';
+        document.getElementById('averageUnitContainer').style.display = 'none';
+        
+        document.getElementById('btnSafeRegister').style.display = 'flex';
+
+        renderSafeTable();
+    }
+
+    /* --- マイページの表示 --- */
+    function showMyPageView() {
+        if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
+        document.getElementById('calendarView').style.display = 'none';
+        document.getElementById('trendsView').style.display = 'none';
+        document.getElementById('ratioView').style.display = 'none';
+        document.getElementById('averageView').style.display = 'none';
+        document.getElementById('safeView').style.display = 'none';
+        document.getElementById('myPageView').style.display = 'flex';
+        
+        document.getElementById('monthlyTotalContainer').style.display = 'none';
+        document.getElementById('trendsTotalDisplay').style.display = 'none';
+        const avg = document.getElementById('trendsAverageDisplay'); if(avg) avg.style.display='none';
+        document.getElementById('ratioTotalDisplay').style.display = 'none';
+        document.getElementById('safeTotalContainer').style.display = 'none';
+        
+        document.getElementById('trendsDateControls').style.display = 'none';
+        document.getElementById('ratioDateControls').style.display = 'none';
+        
+        document.getElementById('calendarFilterContainer').style.display = 'none';
+        document.getElementById('trendsFilterContainer').style.display = 'none';
+        document.getElementById('ratioFilterContainer').style.display = 'none';
+        document.getElementById('averageFilterContainer').style.display = 'none';
+        document.getElementById('trendsUnitContainer').style.display = 'none';
+        document.getElementById('averageUnitContainer').style.display = 'none';
+        document.getElementById('btnSafeRegister').style.display = 'none';
+
+        renderMyPage();
+        renderMyPageRatioFilterMenu();
+        renderMyPageTrendsFilterMenu();
+        renderMyPageTodayFilterMenu();
+        renderMyPageTodaySection();
+        setTimeout(() => { renderMyPageCharts(); }, 100);
+    }
+
+    function renderMyPageCharts() {
+        renderMyPageRatioChart();
+        renderMyPageTrendsChart();
+    }
+
+    function refreshMyPageChartsIfVisible() {
+        if (document.getElementById('myPageView').style.display !== 'flex') return;
+        renderMyPageRatioFilterMenu();
+        renderMyPageTrendsFilterMenu();
+        renderMyPageTodayFilterMenu();
+        renderMyPageCharts();
+        renderMyPageTodaySection();
+    }
+
+    function formatLocalDateKey(date) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    }
+
+    function formatShortDate(date) {
+        return `${date.getMonth() + 1}/${date.getDate()}`;
+    }
+
+    function renderMyPageRatioChart() {
+        const oldCanvas = document.getElementById('myPageRatioPieChart');
+        if (!oldCanvas) return;
+
+        if (myPageRatioPieChartInstance) {
+            myPageRatioPieChartInstance.destroy();
+            myPageRatioPieChartInstance = null;
+        }
+
+        const parent = oldCanvas.parentNode;
+        parent.innerHTML = '<canvas id="myPageRatioPieChart"></canvas>';
+        const canvas = document.getElementById('myPageRatioPieChart');
+
+        const today = new Date();
+        const year = today.getFullYear();
+        const month = today.getMonth() + 1;
+        const data = loadData();
+        const activeProjs = getActiveProjects('mypage-ratio-filter-cb-proj');
+        const summary = {};
+        let total = 0;
+
+        for (const dateStr in data) {
+            const [y, m] = dateStr.split('-').map(Number);
+            if (y === year && m === month) {
+                data[dateStr].forEach(item => {
+                    if (activeProjs.includes(item.name)) {
+                        summary[item.name] = (summary[item.name] || 0) + item.amount;
+                        total += item.amount;
+                    }
+                });
+            }
+        }
+
+        const periodLabel = document.getElementById('myPageRatioPeriodLabel');
+        if (periodLabel) periodLabel.textContent = `${year}年${month}月`;
+        const totalDisplay = document.getElementById('myPageRatioTotalDisplay');
+        if (totalDisplay) totalDisplay.textContent = `合計: ¥${total.toLocaleString()}`;
+
+        const isDark = document.body.classList.contains('dark-mode');
+        const sortedEntries = Object.entries(summary).sort((a, b) => b[1] - a[1]);
+        const sortedLabels = sortedEntries.map(e => e[0]);
+        const sortedData = sortedEntries.map(e => e[1]);
+        const colors = ['#3182ce', '#319795', '#dd6b20', '#805ad5', '#e53e3e', '#38a169', '#d69e2e'];
+
+        const tableContainer = document.getElementById('myPageRatioTableContainer');
+        if (tableContainer) {
+            if (sortedEntries.length === 0) {
+                tableContainer.innerHTML = `<div style="text-align:center; color:#718096; margin-top:20px;">データがありません</div>`;
+            } else {
+                const textColor = isDark ? '#edf2f7' : '#2d3748';
+                const borderColor = isDark ? '#4a5568' : '#edf2f7';
+                let tableHTML = `<table style="width: 100%; border-collapse: collapse; text-align: left; color: ${textColor};">`;
+                tableHTML += `<thead><tr style="border-bottom: 2px solid ${borderColor}; color: ${isDark ? '#cbd5e0' : '#4a5568'};">`;
+                tableHTML += `<th style="padding: 10px;">項目</th><th style="padding: 10px; text-align: right;">金額</th><th style="padding: 10px; text-align: right;">割合</th></tr></thead><tbody>`;
+                sortedEntries.forEach((entry, index) => {
+                    const label = entry[0];
+                    const val = entry[1];
+                    const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                    const color = colors[index % colors.length];
+                    tableHTML += `<tr style="border-bottom: 1px solid ${borderColor};">`;
+                    tableHTML += `<td style="padding: 10px;"><span style="display:inline-block; width:12px; height:12px; background-color:${color}; margin-right:8px; border-radius:2px;"></span>${escapeHtml(label)}</td>`;
+                    tableHTML += `<td style="padding: 10px; text-align: right;">¥${val.toLocaleString()}</td>`;
+                    tableHTML += `<td style="padding: 10px; text-align: right;">${pct}%</td>`;
+                    tableHTML += `</tr>`;
+                });
+                tableHTML += `</tbody></table>`;
+                tableContainer.innerHTML = tableHTML;
+            }
+        }
+
+        const zeroData = new Array(sortedData.length).fill(0);
+        myPageRatioPieChartInstance = new Chart(canvas.getContext('2d'), {
+            type: 'doughnut',
+            plugins: [ChartDataLabels, {
+                id: 'myPageCenterText',
+                beforeDraw: function(chart) {
+                    if (total === 0) return;
+                    const ctx = chart.ctx;
+                    const chartArea = chart.chartArea;
+                    if (!chartArea) return;
+                    const centerX = (chartArea.left + chartArea.right) / 2;
+                    const centerY = (chartArea.top + chartArea.bottom) / 2;
+                    ctx.save();
+                    const fontSize = (chartArea.bottom - chartArea.top) / 10;
+                    ctx.font = "bold " + fontSize + "px 'Helvetica Neue', Arial, sans-serif";
+                    ctx.textBaseline = "middle";
+                    ctx.textAlign = "center";
+                    ctx.fillStyle = isDark ? '#edf2f7' : '#4a5568';
+                    ctx.fillText("¥" + total.toLocaleString(), centerX, centerY);
+                    ctx.restore();
+                }
+            }],
+            data: {
+                labels: sortedLabels,
+                datasets: [{ data: zeroData, backgroundColor: colors, borderWidth: 1, borderColor: isDark ? '#2d3748' : '#ffffff' }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '65%',
+                animation: { duration: 1000, animateRotate: true, animateScale: false },
+                plugins: {
+                    legend: { display: false },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 12 },
+                        textAlign: 'center',
+                        formatter: (value, ctx) => {
+                            if (value === 0) return null;
+                            const currentTotal = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            if (currentTotal === 0) return null;
+                            const percentage = (value / currentTotal) * 100;
+                            if (percentage < 5) return null;
+                            const label = ctx.chart.data.labels[ctx.dataIndex];
+                            return `${label}\n¥${value.toLocaleString()}\n${percentage.toFixed(1)}%`;
+                        }
+                    }
+                }
+            }
+        });
+
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                if (myPageRatioPieChartInstance) {
+                    myPageRatioPieChartInstance.data.datasets[0].data = sortedData;
+                    myPageRatioPieChartInstance.update();
+                }
+            }, 60);
+        });
+    }
+
+    function renderMyPageTrendsChart() {
+        const canvas = document.getElementById('myPageTrendsLineChart');
+        if (!canvas) return;
+        if (myPageTrendsLineChartInstance) {
+            myPageTrendsLineChartInstance.destroy();
+            myPageTrendsLineChartInstance = null;
+        }
+
+        const today = new Date();
+        const startDate = new Date(today);
+        startDate.setDate(today.getDate() - 29);
+        const data = loadData();
+        const activeProjs = getActiveProjects('mypage-trends-filter-cb-proj');
+        const labels = [];
+        const chartData = [];
+        let total = 0;
+
+        for (let i = 0; i < 30; i++) {
+            const currentDate = new Date(startDate);
+            currentDate.setDate(startDate.getDate() + i);
+            const dateStr = formatLocalDateKey(currentDate);
+            labels.push(formatShortDate(currentDate));
+            const dayTotal = (data[dateStr] || []).reduce((sum, item) => {
+                return activeProjs.includes(item.name) ? sum + item.amount : sum;
+            }, 0);
+            chartData.push(dayTotal);
+            total += dayTotal;
+        }
+
+        const periodLabel = document.getElementById('myPageTrendsPeriodLabel');
+        if (periodLabel) periodLabel.textContent = `${formatShortDate(startDate)} ~ ${formatShortDate(today)}`;
+        const totalDisplay = document.getElementById('myPageTrendsTotalDisplay');
+        if (totalDisplay) totalDisplay.textContent = `合計: ¥${total.toLocaleString()}`;
+        const avgDisplay = document.getElementById('myPageTrendsAverageDisplay');
+        if (avgDisplay) avgDisplay.textContent = `日平均: ¥${Math.round(total / 30).toLocaleString()}`;
+
+        const isDark = document.body.classList.contains('dark-mode');
+        myPageTrendsLineChartInstance = new Chart(canvas.getContext('2d'), {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: chartData,
+                    borderColor: isDark ? '#63b3ed' : '#3182ce',
+                    backgroundColor: isDark ? 'rgba(99, 179, 237, 0.15)' : 'rgba(49, 130, 206, 0.1)',
+                    borderWidth: 2.5,
+                    fill: true,
+                    tension: 0.15,
+                    pointRadius: 2,
+                    pointHoverRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { color: isDark ? '#4a5568' : '#e2e8f0' }, ticks: { color: isDark ? '#edf2f7' : '#4a5568', maxRotation: 0, autoSkip: true } },
+                    y: { beginAtZero: true, grid: { color: isDark ? '#4a5568' : '#e2e8f0' }, ticks: { color: isDark ? '#edf2f7' : '#4a5568', callback: function(v) { return '¥' + v.toLocaleString(); } } }
+                },
+                plugins: {
+                    legend: { display: false },
+                    datalabels: { display: false },
+                    tooltip: { callbacks: { label: function(ctx) { return ` ¥${ctx.parsed.y.toLocaleString()}`; } } }
+                }
+            }
+        });
+    }
+
+    function renderMyPage() {
+        const profile = loadProfile();
+        const bannerEl = document.getElementById('myPageBanner');
+        const iconEl = document.getElementById('myPageIcon');
+        const nameEl = document.getElementById('myPageName');
+        
+        if (profile.banner) bannerEl.style.backgroundImage = `url(${profile.banner})`;
+        else bannerEl.style.backgroundImage = 'none';
+        
+        if (profile.icon) iconEl.style.backgroundImage = `url(${profile.icon})`;
+        else iconEl.style.backgroundImage = 'none';
+        
+        nameEl.textContent = profile.name || 'ゲスト';
+    }
+
+    function openMyPageSettings() {
+        const profile = loadProfile();
+        document.getElementById('settingBannerInput').value = '';
+        document.getElementById('settingIconInput').value = '';
+        document.getElementById('settingNameInput').value = profile.name || '';
+        document.getElementById('settingPasswordInput').value = profile.password || '';
+        
+        // 目のアイコンとパスワード表示状態をリセット
+        document.getElementById('settingPasswordInput').type = 'password';
+        const btn = document.getElementById('myPagePasswordEyeBtn');
+        if (btn) {
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+        }
+        
+        document.getElementById('myPageSettingsModal').style.display = 'flex';
+    }
+
+    function closeMyPageSettings() {
+        document.getElementById('myPageSettingsModal').style.display = 'none';
+    }
+
+    function readFileAsDataURL(file) {
+        return new Promise((resolve) => {
+            if (!file) { resolve(null); return; }
+            const reader = new FileReader();
+            reader.onload = e => resolve(e.target.result);
+            reader.readAsDataURL(file);
+        });
+    }
+
+    async function saveMyPageSettings() {
+        const bannerFile = document.getElementById('settingBannerInput').files[0];
+        const iconFile = document.getElementById('settingIconInput').files[0];
+        const name = document.getElementById('settingNameInput').value.trim();
+        const password = document.getElementById('settingPasswordInput').value;
+        
+        const profile = loadProfile();
+        
+        if (bannerFile) {
+            profile.banner = await readFileAsDataURL(bannerFile);
+        }
+        if (iconFile) {
+            profile.icon = await readFileAsDataURL(iconFile);
+        }
+        profile.name = name;
+        profile.password = password;
+        
+        try {
+            saveProfile(profile);
+            renderMyPage();
+            closeMyPageSettings();
+        } catch (e) {
+            alert("保存に失敗しました。画像サイズが大きすぎる可能性があります（ローカルストレージ制限）。画像を圧縮してお試しください。");
+        }
+    }
+
+    /* --- マイページパスワード表示・非表示の切り替え --- */
+    function toggleMyPagePassword() {
+        const input = document.getElementById('settingPasswordInput');
+        const btn = document.getElementById('myPagePasswordEyeBtn');
+        const eyeOnSvg = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+        const eyeOffSvg = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            btn.innerHTML = eyeOnSvg;
+        } else {
+            input.type = 'password';
+            btn.innerHTML = eyeOffSvg;
+        }
+    }
+
+    /* --- パスワード確認用関数 --- */
+    function checkPassword() {
+        const profile = loadProfile();
+        if (!profile.password) return true; // 未設定なら許可
+        const input = prompt("金庫パスワードを入力してください:");
+        if (input === null) return false; // キャンセル
+        if (input === profile.password) return true;
+        alert("パスワードが違います。");
+        return false;
+    }
+
+    /* --- モーダルのギフトコード表示切り替え --- */
+    function toggleModalCode() {
+        const input = document.getElementById('safeCodeInput');
+        const btn = document.getElementById('modalEyeBtn');
+        const eyeOnSvg = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+        const eyeOffSvg = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+        if (input.type === 'password') {
+            if (!checkPassword()) return; // ロック解除チェック
+            input.type = 'text';
+            btn.innerHTML = eyeOnSvg;
+        } else {
+            input.type = 'password';
+            btn.innerHTML = eyeOffSvg;
+        }
+    }
+
+    /* --- モーダルを開くときに表示状態をリセット --- */
+    function resetModalEye() {
+        const input = document.getElementById('safeCodeInput');
+        const btn = document.getElementById('modalEyeBtn');
+        const eyeOffSvg = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+        if(input) input.type = 'password';
+        if(btn) btn.innerHTML = eyeOffSvg;
+    }
+
+    /* --- 金庫 モーダル操作・保存・削除・編集 --- */
+    function openSafeModal() {
+        resetModalEye();
+        editingSafeId = null; 
+        document.getElementById('safeDateInput').value = new Date().toISOString().split('T')[0];
+        document.getElementById('safeNameInput').value = '';
+        document.getElementById('safeCodeInput').value = '';
+        document.getElementById('safeAmountInput').value = '';
+        document.getElementById('safeUsedInput').checked = false;
+        document.getElementById('safeModal').style.display = 'flex';
+    }
+
+    function closeSafeModal() {
+        document.getElementById('safeModal').style.display = 'none';
+        editingSafeId = null; 
+    }
+
+    function editSafeData(id) {
+        resetModalEye();
+        const data = loadSafeData();
+        const item = data.find(d => d.id === id);
+        if (!item) return;
+        editingSafeId = id;
+        document.getElementById('safeDateInput').value = item.date;
+        document.getElementById('safeNameInput').value = item.name;
+        document.getElementById('safeCodeInput').value = item.code;
+        document.getElementById('safeAmountInput').value = item.amount;
+        document.getElementById('safeUsedInput').checked = !!item.used;
+        document.getElementById('safeModal').style.display = 'flex';
+    }
+
+    function saveSafeData() {
+        const date = document.getElementById('safeDateInput').value;
+        const name = document.getElementById('safeNameInput').value.trim();
+        const code = document.getElementById('safeCodeInput').value.trim();
+        const amount = parseInt(document.getElementById('safeAmountInput').value, 10);
+        const used = document.getElementById('safeUsedInput').checked;
+        
+        if(!date || !name || !code || isNaN(amount) || amount < 0) {
+            alert("すべての項目を正しく入力してください");
+            return;
+        }
+        
+        let data = loadSafeData();
+        
+        if (editingSafeId) {
+            const index = data.findIndex(d => d.id === editingSafeId);
+            if (index !== -1) {
+                data[index].date = date;
+                data[index].name = name;
+                data[index].code = code;
+                data[index].amount = amount;
+                data[index].used = used;
+            }
+            editingSafeId = null; 
+        } else {
+            data.push({ id: Date.now(), date: date, name: name, code: code, amount: amount, used: used });
+        }
+        
+        data.sort((a, b) => new Date(b.date) - new Date(a.date));
+        
+        saveSafeDataStorage(data);
+        closeSafeModal();
+        renderSafeTable();
+    }
+
+    function deleteSafeData(id) {
+        if (!confirm("本当に削除しますか？")) return;
+        let data = loadSafeData();
+        data = data.filter(item => item.id !== id);
+        saveSafeDataStorage(data);
+        renderSafeTable();
+    }
+
+    /* --- ギフトコード表示・非表示の切り替え --- */
+    function toggleCode(id) {
+        const span = document.getElementById(`code-val-${id}`);
+        const btn = document.getElementById(`eye-btn-${id}`);
+        const isHidden = span.textContent === '••••••••••••';
+        
+        const eyeOnSvg = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+        const eyeOffSvg = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+        if (isHidden) {
+            if (!checkPassword()) return; // ロック解除チェック
+            span.textContent = span.getAttribute('data-code');
+            btn.innerHTML = eyeOnSvg;
+        } else {
+            span.textContent = '••••••••••••';
+            btn.innerHTML = eyeOffSvg;
+        }
+    }
+
+    function renderSafeTable() {
+        const data = loadSafeData();
+        const container = document.getElementById('safeTableContainer');
+        
+        let unusedAmount = 0;
+        let usedAmount = 0;
+
+        if (data.length === 0) {
+            container.innerHTML = '<div class="no-data" style="margin-top:40px; font-size:16px;">金庫に登録されたデータがありません</div>';
+            updateSafeTotalsDisplay(0, 0);
+            return;
+        }
+
+        const eyeOffSvg = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+        
+        let html = `<table class="safe-table">
+            <thead>
+                <tr>
+                    <th style="width: 12%;">日付</th>
+                    <th style="width: 20%;">名前</th>
+                    <th style="width: 28%;">ギフトコード</th>
+                    <th style="width: 12%; text-align: right;">金額</th>
+                    <th style="width: 10%; text-align: center;">使用済</th>
+                    <th style="width: 18%; text-align: center;">操作</th>
+                </tr>
+            </thead>
+            <tbody>`;
+            
+        data.forEach(item => {
+            if (item.used) usedAmount += item.amount;
+            else unusedAmount += item.amount;
+            const rowClass = item.used ? 'safe-row-used' : '';
+            html += `<tr class="${rowClass}">
+                <td>${escapeHtml(item.date)}</td>
+                <td>${escapeHtml(item.name)}</td>
+                <td style="font-family: monospace; letter-spacing: 1px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <span id="code-val-${item.id}" data-code="${escapeHtml(item.code)}">••••••••••••</span>
+                        <button class="toggle-eye-btn" onclick="toggleCode(${item.id})" id="eye-btn-${item.id}">
+                            ${eyeOffSvg}
+                        </button>
+                    </div>
+                </td>
+                <td style="text-align: right; font-weight: bold;">¥${item.amount.toLocaleString()}</td>
+                <td style="text-align: center;">
+                    <input type="checkbox" class="safe-used-checkbox" ${item.used ? 'checked' : ''} onchange="toggleSafeUsed(${item.id})" title="使用済み">
+                </td>
+                <td style="text-align: center;">
+                    <button class="btn-blue" style="padding: 6px 12px; font-size: 12px; margin-right: 5px; font-weight: bold;" onclick="editSafeData(${item.id})">変更</button>
+                    <button class="btn-red" onclick="deleteSafeData(${item.id})">削除</button>
+                </td>
+            </tr>`;
+        });
+        
+        html += `</tbody></table>`;
+        container.innerHTML = html;
+        updateSafeTotalsDisplay(unusedAmount, usedAmount);
+    }
+
+    function openWorkModal(viewType) {
+        toggleSidebar(); 
+        document.querySelectorAll('.work-view').forEach(v => v.classList.remove('active'));
+        const titleEl = document.getElementById('workModalTitle');
+        
+        if (viewType === 'projects') {
+            titleEl.textContent = "📂 グループ・項目の登録";
+            document.getElementById('view-projects').classList.add('active');
+            updateGroupDropdowns(); renderProjectsList();
+        } else if (viewType === 'goals') {
+            titleEl.textContent = "🎯 目標金額の設定";
+            document.getElementById('view-goals').classList.add('active');
+            if(!document.getElementById('goalMonthSelect').value) {
+                document.getElementById('goalMonthSelect').value = new Date().toISOString().slice(0, 7);
+            }
+            loadGoalForMonth();
+        } else if (viewType === 'monthly') {
+            titleEl.textContent = "📅 項目ごとの一括入力";
+            document.getElementById('view-monthly').classList.add('active');
+            updateProjectDropdownForMonthly(); renderMonthlyDays();
+        } else if (viewType === 'daily') {
+            titleEl.textContent = "⚡ 各日の一括入力";
+            document.getElementById('view-daily').classList.add('active');
+            renderDailyFields();
+        }
+        document.getElementById('workModal').style.display = 'flex';
+    }
+    function closeWorkModal() { document.getElementById('workModal').style.display = 'none'; }
+
+    function toggleFilterMenu(e) { if(e) e.stopPropagation(); document.getElementById('filterMenu').classList.toggle('open'); }
+    function toggleTrendsFilterMenu(e) { if(e) e.stopPropagation(); document.getElementById('trendsFilterMenu').classList.toggle('open'); }
+    function toggleRatioFilterMenu(e) { if(e) e.stopPropagation(); document.getElementById('ratioRatioMenu').classList.toggle('open'); }
+    function toggleAverageFilterMenu(e) { if(e) e.stopPropagation(); document.getElementById('averageFilterMenu').classList.toggle('open'); }
+    function toggleMyPageRatioFilterMenu(e) { if(e) e.stopPropagation(); document.getElementById('myPageRatioFilterMenu').classList.toggle('open'); }
+    function toggleMyPageTrendsFilterMenu(e) { if(e) e.stopPropagation(); document.getElementById('myPageTrendsFilterMenu').classList.toggle('open'); }
+
+    function renderFilterItems(containerId, groupCbClass, projCbClass, allCbId, onProjChange, onGroupChange, onAllChange) {
+        const groups = loadGroups(); const projs = loadProjects();
+        const menu = document.getElementById(containerId);
+        menu.innerHTML = '';
+        if (projs.length === 0) {
+            menu.innerHTML = '<div style="color:#718096; font-size:12px;">※項目を登録してください</div>'; return;
+        }
+        const allLabel = document.createElement('label');
+        allLabel.className = 'filter-item group'; allLabel.style.borderBottom = '2px solid #cbd5e0'; allLabel.style.paddingBottom = '8px'; allLabel.style.marginBottom = '8px';
+        allLabel.innerHTML = `<input type="checkbox" id="${allCbId}" class="filter-cb" checked onchange="${onAllChange}(this.checked)">
+                              <span class="icon"></span>📊 すべての項目`;
+        menu.appendChild(allLabel);
+
+        groups.forEach(g => {
+            const groupProjs = projs.filter(p => p.group === g);
+            if (groupProjs.length === 0) return; 
+            const gLabel = document.createElement('label'); gLabel.className = 'filter-item group';
+            gLabel.innerHTML = `<input type="checkbox" class="filter-cb ${groupCbClass}" data-group="${escapeHtml(g)}" checked onchange="${onGroupChange}('${escapeHtml(g)}', this.checked)">
+                                <span class="icon"></span>📁 ${escapeHtml(g)}`;
+            menu.appendChild(gLabel);
+            groupProjs.forEach(p => {
+                const pLabel = document.createElement('label'); pLabel.className = 'filter-item proj';
+                pLabel.innerHTML = `<input type="checkbox" class="filter-cb ${projCbClass}" data-group="${escapeHtml(g)}" value="${escapeHtml(p.name)}" checked onchange="${onProjChange}()">
+                                    <span class="icon"></span>📄 ${escapeHtml(p.name)}`;
+                menu.appendChild(pLabel);
+            });
+        });
+    }
+
+    function renderFilterMenu() { 
+        renderFilterItems('filterMenuContent', 'filter-cb-group', 'filter-cb-proj', 'allFilterCb', 'updateCalendarFromFilter', 'toggleGroupFilter', 'toggleAllFilter');
+        updateAllCheckboxState(); refreshCalendar();
+    }
+    function renderTrendsFilterMenu() {
+        renderFilterItems('trendsFilterMenuContent', 'trends-filter-cb-group', 'trends-filter-cb-proj', 'allTrendsFilterCb', 'updateTrendsChartFromFilter', 'toggleTrendsGroupFilter', 'toggleAllTrendsFilter');
+        updateAllTrendsCheckboxState();
+    }
+    function renderRatioFilterMenu() {
+        renderFilterItems('ratioFilterMenuContent', 'ratio-filter-cb-group', 'ratio-filter-cb-proj', 'allRatioFilterCb', 'updateRatioChartFromFilter', 'toggleRatioGroupFilter', 'toggleAllRatioFilter');
+        updateAllRatioCheckboxState();
+    }
+    function renderAverageFilterMenu() {
+        renderFilterItems('averageFilterMenuContent', 'average-filter-cb-group', 'average-filter-cb-proj', 'allAverageFilterCb', 'updateAverageChartFromFilter', 'toggleAverageGroupFilter', 'toggleAllAverageFilter');
+        updateAllAverageCheckboxState();
+    }
+    function renderMyPageRatioFilterMenu() {
+        renderFilterItems('myPageRatioFilterMenuContent', 'mypage-ratio-filter-cb-group', 'mypage-ratio-filter-cb-proj', 'allMyPageRatioFilterCb', 'updateMyPageRatioChartFromFilter', 'toggleMyPageRatioGroupFilter', 'toggleAllMyPageRatioFilter');
+        updateAllMyPageRatioCheckboxState();
+    }
+    function renderMyPageTrendsFilterMenu() {
+        renderFilterItems('myPageTrendsFilterMenuContent', 'mypage-trends-filter-cb-group', 'mypage-trends-filter-cb-proj', 'allMyPageTrendsFilterCb', 'updateMyPageTrendsChartFromFilter', 'toggleMyPageTrendsGroupFilter', 'toggleAllMyPageTrendsFilter');
+        updateAllMyPageTrendsCheckboxState();
+    }
+
+    function toggleGroupFilter(groupName, isChecked) {
+        document.querySelectorAll(`.filter-cb-proj[data-group="${groupName}"]`).forEach(cb => { cb.checked = isChecked; });
+        updateAllCheckboxState(); refreshCalendar();
+    }
+    function toggleAllFilter(isChecked) {
+        document.querySelectorAll('.filter-cb-group, .filter-cb-proj').forEach(cb => { cb.checked = isChecked; });
+        refreshCalendar();
+    }
+    function updateCalendarFromFilter() { updateAllCheckboxState(); refreshCalendar(); }
+
+    function toggleTrendsGroupFilter(groupName, isChecked) {
+        document.querySelectorAll(`.trends-filter-cb-proj[data-group="${groupName}"]`).forEach(cb => { cb.checked = isChecked; });
+        updateAllTrendsCheckboxState(); renderTrendsChart(false);
+    }
+    function toggleAllTrendsFilter(isChecked) {
+        document.querySelectorAll('.trends-filter-cb-group, .trends-filter-cb-proj').forEach(cb => { cb.checked = isChecked; });
+        renderTrendsChart(false);
+    }
+    function updateTrendsChartFromFilter() { updateAllTrendsCheckboxState(); renderTrendsChart(false); }
+
+    function toggleRatioGroupFilter(groupName, isChecked) {
+        document.querySelectorAll(`.ratio-filter-cb-proj[data-group="${groupName}"]`).forEach(cb => { cb.checked = isChecked; });
+        updateAllRatioCheckboxState(); renderRatioChart();
+    }
+    function toggleAllRatioFilter(isChecked) {
+        document.querySelectorAll('.ratio-filter-cb-group, .ratio-filter-cb-proj').forEach(cb => { cb.checked = isChecked; });
+        renderRatioChart();
+    }
+    function updateRatioChartFromFilter() { updateAllRatioCheckboxState(); renderRatioChart(); }
+
+    function toggleAverageGroupFilter(groupName, isChecked) {
+        document.querySelectorAll(`.average-filter-cb-proj[data-group="${groupName}"]`).forEach(cb => { cb.checked = isChecked; });
+        updateAllAverageCheckboxState(); renderAverageCharts();
+    }
+    function toggleAllAverageFilter(isChecked) {
+        document.querySelectorAll('.average-filter-cb-group, .average-filter-cb-proj').forEach(cb => { cb.checked = isChecked; });
+        renderAverageCharts();
+    }
+    function updateAverageChartFromFilter() { updateAllAverageCheckboxState(); renderAverageCharts(); }
+
+    function toggleMyPageRatioGroupFilter(groupName, isChecked) {
+        document.querySelectorAll(`.mypage-ratio-filter-cb-proj[data-group="${groupName}"]`).forEach(cb => { cb.checked = isChecked; });
+        updateAllMyPageRatioCheckboxState(); renderMyPageRatioChart();
+    }
+    function toggleAllMyPageRatioFilter(isChecked) {
+        document.querySelectorAll('.mypage-ratio-filter-cb-group, .mypage-ratio-filter-cb-proj').forEach(cb => { cb.checked = isChecked; });
+        renderMyPageRatioChart();
+    }
+    function updateMyPageRatioChartFromFilter() { updateAllMyPageRatioCheckboxState(); renderMyPageRatioChart(); }
+
+    function toggleMyPageTrendsGroupFilter(groupName, isChecked) {
+        document.querySelectorAll(`.mypage-trends-filter-cb-proj[data-group="${groupName}"]`).forEach(cb => { cb.checked = isChecked; });
+        updateAllMyPageTrendsCheckboxState(); renderMyPageTrendsChart();
+    }
+    function toggleAllMyPageTrendsFilter(isChecked) {
+        document.querySelectorAll('.mypage-trends-filter-cb-group, .mypage-trends-filter-cb-proj').forEach(cb => { cb.checked = isChecked; });
+        renderMyPageTrendsChart();
+    }
+    function updateMyPageTrendsChartFromFilter() { updateAllMyPageTrendsCheckboxState(); renderMyPageTrendsChart(); }
+
+    function updateAllCheckboxState() {
+        const allCb = document.getElementById('allFilterCb'); if (!allCb) return;
+        const projsCbs = document.querySelectorAll('.filter-cb-proj');
+        if (projsCbs.length === 0) { allCb.checked = true; return; }
+        allCb.checked = Array.from(projsCbs).every(cb => cb.checked);
+        loadGroups().forEach(g => {
+            const gCb = document.querySelector(`.filter-cb-group[data-group="${g}"]`);
+            if (gCb) { const groupProjsCbs = document.querySelectorAll(`.filter-cb-proj[data-group="${g}"]`); if (groupProjsCbs.length > 0) gCb.checked = Array.from(groupProjsCbs).every(cb => cb.checked); }
+        });
+    }
+    function updateAllTrendsCheckboxState() {
+        const allCb = document.getElementById('allTrendsFilterCb'); if (!allCb) return;
+        const projsCbs = document.querySelectorAll('.trends-filter-cb-proj');
+        if (projsCbs.length === 0) { allCb.checked = true; return; }
+        allCb.checked = Array.from(projsCbs).every(cb => cb.checked);
+        loadGroups().forEach(g => {
+            const gCb = document.querySelector(`.trends-filter-cb-group[data-group="${g}"]`);
+            if (gCb) { const groupProjsCbs = document.querySelectorAll(`.trends-filter-cb-proj[data-group="${g}"]`); if (groupProjsCbs.length > 0) gCb.checked = Array.from(groupProjsCbs).every(cb => cb.checked); }
+        });
+    }
+    function updateAllRatioCheckboxState() {
+        const allCb = document.getElementById('allRatioFilterCb'); if (!allCb) return;
+        const projsCbs = document.querySelectorAll('.ratio-filter-cb-proj');
+        if (projsCbs.length === 0) { allCb.checked = true; return; }
+        allCb.checked = Array.from(projsCbs).every(cb => cb.checked);
+        loadGroups().forEach(g => {
+            const gCb = document.querySelector(`.ratio-filter-cb-group[data-group="${g}"]`);
+            if (gCb) { const groupProjsCbs = document.querySelectorAll(`.ratio-filter-cb-proj[data-group="${g}"]`); if (groupProjsCbs.length > 0) gCb.checked = Array.from(groupProjsCbs).every(cb => cb.checked); }
+        });
+    }
+    function updateAllAverageCheckboxState() {
+        const allCb = document.getElementById('allAverageFilterCb'); if (!allCb) return;
+        const projsCbs = document.querySelectorAll('.average-filter-cb-proj');
+        if (projsCbs.length === 0) { allCb.checked = true; return; }
+        allCb.checked = Array.from(projsCbs).every(cb => cb.checked);
+        loadGroups().forEach(g => {
+            const gCb = document.querySelector(`.average-filter-cb-group[data-group="${g}"]`);
+            if (gCb) { const groupProjsCbs = document.querySelectorAll(`.average-filter-cb-proj[data-group="${g}"]`); if (groupProjsCbs.length > 0) gCb.checked = Array.from(groupProjsCbs).every(cb => cb.checked); }
+        });
+    }
+    function updateAllMyPageRatioCheckboxState() {
+        const allCb = document.getElementById('allMyPageRatioFilterCb'); if (!allCb) return;
+        const projsCbs = document.querySelectorAll('.mypage-ratio-filter-cb-proj');
+        if (projsCbs.length === 0) { allCb.checked = true; return; }
+        allCb.checked = Array.from(projsCbs).every(cb => cb.checked);
+        loadGroups().forEach(g => {
+            const gCb = document.querySelector(`.mypage-ratio-filter-cb-group[data-group="${g}"]`);
+            if (gCb) { const groupProjsCbs = document.querySelectorAll(`.mypage-ratio-filter-cb-proj[data-group="${g}"]`); if (groupProjsCbs.length > 0) gCb.checked = Array.from(groupProjsCbs).every(cb => cb.checked); }
+        });
+    }
+    function updateAllMyPageTrendsCheckboxState() {
+        const allCb = document.getElementById('allMyPageTrendsFilterCb'); if (!allCb) return;
+        const projsCbs = document.querySelectorAll('.mypage-trends-filter-cb-proj');
+        if (projsCbs.length === 0) { allCb.checked = true; return; }
+        allCb.checked = Array.from(projsCbs).every(cb => cb.checked);
+        loadGroups().forEach(g => {
+            const gCb = document.querySelector(`.mypage-trends-filter-cb-group[data-group="${g}"]`);
+            if (gCb) { const groupProjsCbs = document.querySelectorAll(`.mypage-trends-filter-cb-proj[data-group="${g}"]`); if (groupProjsCbs.length > 0) gCb.checked = Array.from(groupProjsCbs).every(cb => cb.checked); }
+        });
+    }
+
+    function getActiveProjects(projClass) {
+        return Array.from(document.querySelectorAll('.' + projClass)).filter(cb => cb.checked).map(cb => cb.value);
+    }
+
+    function addGroup() {
+        const input = document.getElementById('newGroupName'); const name = input.value.trim(); if (!name) return;
+        const groups = loadGroups(); if (groups.includes(name)) { alert("そのグループは既に存在します"); return; }
+        groups.push(name); saveGroups(groups); input.value = "";
+        updateGroupDropdowns(); renderFilterMenu(); renderTrendsFilterMenu(); renderRatioFilterMenu(); renderAverageFilterMenu(); renderProjectsList(); refreshMyPageChartsIfVisible();
+    }
+    function addProject() {
+        const group = document.getElementById('projectGroupSelect').value;
+        const nameInput = document.getElementById('newProjectName'); const name = nameInput.value.trim(); if (!name || !group) return;
+        const projs = loadProjects(); if (projs.find(p => p.name === name)) { alert("その項目は既に登録されています"); return; }
+        projs.push({ name: name, group: group }); saveProjects(projs); nameInput.value = "";
+        renderProjectsList(); renderFilterMenu(); renderTrendsFilterMenu(); renderRatioFilterMenu(); renderAverageFilterMenu(); refreshMyPageChartsIfVisible();
+    }
+    function deleteProject(index) {
+        const projs = loadProjects(); projs.splice(index, 1); saveProjects(projs);
+        renderProjectsList(); renderFilterMenu(); renderTrendsFilterMenu(); renderRatioFilterMenu(); renderAverageFilterMenu(); refreshMyPageChartsIfVisible();
+    }
+    function changeProjectGroup(index, newGroup) {
+        const projs = loadProjects(); projs[index].group = newGroup; saveProjects(projs);
+        renderProjectsList(); renderFilterMenu(); renderTrendsFilterMenu(); renderRatioFilterMenu(); renderAverageFilterMenu(); refreshMyPageChartsIfVisible();
+    }
+    function updateGroupDropdowns() {
+        const select = document.getElementById('projectGroupSelect'); select.innerHTML = '';
+        loadGroups().forEach(g => { const opt = document.createElement('option'); opt.value = g; opt.textContent = g; select.appendChild(opt); });
+    }
+    function renderProjectsList() {
+        const projs = loadProjects(); const groups = loadGroups();
+        const container = document.getElementById('projectListContainer');
+        container.innerHTML = projs.length === 0 ? '<div class="no-data">登録された項目はありません</div>' : '';
+        let groupOptionsHtml = ''; groups.forEach(g => { groupOptionsHtml += `<option value="${escapeHtml(g)}">${escapeHtml(g)}</option>`; });
+        groups.forEach(g => {
+            const groupProjs = projs.filter(p => p.group === g);
+            if (groupProjs.length > 0) {
+                const h5 = document.createElement('div'); h5.style.fontWeight = 'bold'; h5.style.marginTop = '15px'; h5.style.color = '#4a5568'; h5.textContent = `📁 ${g}`; container.appendChild(h5);
+                groupProjs.forEach(p => {
+                    const originalIndex = projs.findIndex(orig => orig.name === p.name);
+                    const div = document.createElement('div'); div.className = 'list-item';
+                    const selectHtml = `<select class="group-move-select" onchange="changeProjectGroup(${originalIndex}, this.value)">
+                                            ${groupOptionsHtml.replace(`value="${escapeHtml(p.group)}"`, `value="${escapeHtml(p.group)}" selected`)}
+                                        </select>`;
+                    div.innerHTML = `<span style="margin-left: 15px;">📄 ${escapeHtml(p.name)}</span>
+                                     <div style="display:flex; gap:8px; align-items:center;">${selectHtml}<button class="btn-red" onclick="deleteProject(${originalIndex})">削除</button></div>`;
+                    container.appendChild(div);
+                });
+            }
+        });
+    }
+
+    function loadGoalForMonth() {
+        const monthStr = document.getElementById('goalMonthSelect').value;
+        if (!monthStr) return;
+        const goals = loadGoals();
+        document.getElementById('goalAmount').value = goals[monthStr] || '';
+    }
+    function saveGoal() {
+        const monthStr = document.getElementById('goalMonthSelect').value;
+        const amount = parseInt(document.getElementById('goalAmount').value, 10);
+        if (!monthStr) { alert("月を選択してください"); return; }
+        const goals = loadGoals();
+        if (isNaN(amount) || amount <= 0) { delete goals[monthStr]; } else { goals[monthStr] = amount; }
+        saveGoals(goals);
+        alert("目標金額を保存しました！");
+        updateMonthlyTotal(); 
+    }
+
+    function updateProjectDropdownForMonthly() {
+        const select = document.getElementById('monthlyProjSelect');
+        const projs = loadProjects(); const groups = loadGroups();
+        select.innerHTML = projs.length === 0 ? '<option value="">先に項目を登録してください</option>' : '';
+        groups.forEach(g => {
+            const groupProjs = projs.filter(p => p.group === g);
+            if (groupProjs.length > 0) {
+                const optgroup = document.createElement('optgroup'); optgroup.label = g;
+                groupProjs.forEach(p => { const opt = document.createElement('option'); opt.value = p.name; opt.textContent = p.name; optgroup.appendChild(opt); });
+                select.appendChild(optgroup);
+            }
+        });
+    }
+
+    function renderMonthlyDays() {
+        const projName = document.getElementById('monthlyProjSelect').value;
+        const yearMonth = document.getElementById('monthlyMonthSelect').value;
+        const container = document.getElementById('monthlyDaysContainer'); container.innerHTML = "";
+        if (!projName || !yearMonth) { container.innerHTML = '<div class="no-data">項目と月を選択してください</div>'; return; }
+        const [year, month] = yearMonth.split('-').map(Number); const daysInMonth = new Date(year, month, 0).getDate(); const data = loadData();
+        for (let d = 1; d <= daysInMonth; d++) {
+            const dateStr = `${year}-${String(month).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+            const existingItem = (data[dateStr] || []).find(item => item.name === projName);
+            const value = existingItem ? existingItem.amount : "";
+            const div = document.createElement('div'); div.className = 'vertical-input-row';
+            div.innerHTML = `<label>${month}月 ${d}日</label><input type="number" class="monthly-amount-input" data-date="${dateStr}" value="${value}" placeholder="0" min="0">`;
+            container.appendChild(div);
+        }
+    }
+
+    function saveMonthlyRevenue() {
+        const projName = document.getElementById('monthlyProjSelect').value; if (!projName) return;
+        const data = loadData();
+        document.querySelectorAll('.monthly-amount-input').forEach(input => {
+            const dateStr = input.dataset.date; const amount = parseInt(input.value, 10);
+            if (!data[dateStr]) data[dateStr] = []; const existingIdx = data[dateStr].findIndex(item => item.name === projName);
+            if (!isNaN(amount) && amount > 0) {
+                if (existingIdx !== -1) data[dateStr][existingIdx].amount = amount; else data[dateStr].push({ name: projName, amount: amount });
+            } else { if (existingIdx !== -1) data[dateStr].splice(existingIdx, 1); }
+            if (data[dateStr].length === 0) delete data[dateStr];
+        });
+        saveData(data); refreshCalendar(); refreshMyPageChartsIfVisible(); alert("1ヶ月分の収益を一括保存しました！"); closeWorkModal();
+    }
+
+    function renderDailyFields() {
+        const dateStr = document.getElementById('dailyDateSelect').value;
+        const container = document.getElementById('dailyFieldsContainer'); container.innerHTML = ""; if (!dateStr) return;
+        const projs = loadProjects(); const groups = loadGroups();
+        if (projs.length === 0) { container.innerHTML = '<div class="no-data">先に項目を登録してください</div>'; return; }
+        const dayList = loadData()[dateStr] || [];
+        groups.forEach(g => {
+            const groupProjs = projs.filter(p => p.group === g);
+            if (groupProjs.length > 0) {
+                const h5 = document.createElement('div'); h5.style.fontWeight = 'bold'; h5.style.marginTop = '15px'; h5.style.color = '#4a5568'; h5.textContent = `📁 ${g}`; container.appendChild(h5);
+                groupProjs.forEach(p => {
+                    const existingItem = dayList.find(item => item.name === p.name); const value = existingItem ? existingItem.amount : "";
+                    const div = document.createElement('div'); div.className = 'vertical-input-row';
+                    div.innerHTML = `<label style="margin-left: 15px;">📄 ${escapeHtml(p.name)}</label><input type="number" class="daily-amount-input" data-project="${escapeHtml(p.name)}" value="${value}" placeholder="0" min="0">`;
+                    container.appendChild(div);
+                });
+            }
+        });
+    }
+
+    function saveDailyRevenue() {
+        const dateStr = document.getElementById('dailyDateSelect').value; if (!dateStr) return;
+        const data = loadData(); if (!data[dateStr]) data[dateStr] = [];
+        document.querySelectorAll('.daily-amount-input').forEach(input => {
+            const projName = input.dataset.project; const amount = parseInt(input.value, 10);
+            const existingIdx = data[dateStr].findIndex(item => item.name === projName);
+            if (!isNaN(amount) && amount > 0) {
+                if (existingIdx !== -1) data[dateStr][existingIdx].amount = amount; else data[dateStr].push({ name: projName, amount: amount });
+            } else { if (existingIdx !== -1) data[dateStr].splice(existingIdx, 1); }
+        });
+        if (data[dateStr].length === 0) delete data[dateStr]; saveData(data); refreshCalendar(); refreshMyPageChartsIfVisible();
+        alert(`${dateStr} の収益を一括保存しました！`); closeWorkModal();
+    }
+
+    function refreshCalendar() {
+        calendar.removeAllEvents(); const data = loadData(); const activeProjs = getActiveProjects('filter-cb-proj'); 
+        for (const dateStr in data) {
+            const list = data[dateStr];
+            if (list && list.length > 0) {
+                const dayTotal = list.reduce((sum, item) => { return activeProjs.includes(item.name) ? sum + item.amount : sum; }, 0);
+                if (dayTotal > 0) calendar.addEvent({ title: `¥${dayTotal.toLocaleString()}`, start: dateStr, allDay: true });
+            }
+        }
+        updateMonthlyTotal();
+    }
+
+    function updateCalendarHeaderProgress() {
+        const titleEl = document.querySelector('.fc-toolbar-title');
+        if (!titleEl || !calendar) return;
+
+        let wrap = document.querySelector('.fc-toolbar-title-wrap');
+        if (!wrap) {
+            wrap = document.createElement('div');
+            wrap.className = 'fc-toolbar-title-wrap';
+            titleEl.parentNode.insertBefore(wrap, titleEl);
+            wrap.appendChild(titleEl);
+
+            const progress = document.createElement('div');
+            progress.className = 'fc-title-progress';
+            progress.innerHTML = '<div class="progress-wrapper" style="display:flex;align-items:center;gap:10px;"><span class="header-progress-text" id="calendarGoalText">目標 ¥0</span><div class="header-progress-bar" style="position:relative;"><div class="header-progress-fill" id="calendarHeaderProgressFill"></div><div id="calendarHeaderProgressText" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-weight:bold;color:#fff;">0%</div></div></div>';
+            wrap.appendChild(progress);
+        }
+
+        const currentData = calendar.getDate();
+        const year = currentData.getFullYear();
+        const month = currentData.getMonth() + 1;
+        const monthKey = `${year}-${String(month).padStart(2,'0')}`;
+        const goals = loadGoals();
+        const goal = goals[monthKey] || 0;
+
+        let total = 0;
+        const data = loadData();
+        const activeProjs = getActiveProjects('filter-cb-proj');
+
+        for (const dateStr in data) {
+            const [y,m] = dateStr.split('-').map(Number);
+            if (y === year && m === month) {
+                total += data[dateStr].reduce((s,item)=> activeProjs.includes(item.name) ? s + item.amount : s, 0);
+            }
+        }
+
+        const pct = goal > 0 ? Math.min(100, (total / goal) * 100) : 0;
+        document.getElementById('calendarHeaderProgressFill').style.width = pct + '%';
+        document.getElementById('calendarHeaderProgressText').textContent = goal > 0 ? pct.toFixed(1) + '%' : '-';
+        document.getElementById('calendarGoalText').textContent = goal > 0 ? '目標 ¥' + goal.toLocaleString() : '目標未設定';
+    }
+
+    function updateMonthlyTotal() {
+        const displayEl = document.getElementById('monthlyTotalDisplay'); if (!calendar) return;
+        const currentData = calendar.getDate(); const currentYear = currentData.getFullYear(); const currentMonth = currentData.getMonth() + 1;
+        const data = loadData(); const activeProjs = getActiveProjects('filter-cb-proj'); let monthlyTotal = 0;
+        
+        for (const dateStr in data) {
+            const [year, month] = dateStr.split('-').map(Number);
+            if (year === currentYear && month === currentMonth) {
+                monthlyTotal += data[dateStr].reduce((sum, item) => { return activeProjs.includes(item.name) ? sum + item.amount : sum; }, 0);
+            }
+        }
+        displayEl.textContent = `${currentMonth}月の合計: ¥${monthlyTotal.toLocaleString()}`;
+        const monthKey = `${currentYear}-${String(currentMonth).padStart(2,'0')}`;
+        const goals = loadGoals();
+        const goal = goals[monthKey] || 0;
+        checkGoalAchievement(monthKey, monthlyTotal, goal);
+        updateCalendarHeaderProgress();
+    }
+
+    function openModal(dateStr) {
+        selectedDateStr = dateStr; const [y, m, d] = dateStr.split('-');
+        document.getElementById('modalDateTitle').textContent = `${y}年${m}月${d}日 の詳細`;
+        const select = document.getElementById('itemProjSelect'); select.innerHTML = '';
+        loadProjects().forEach(p => { const opt = document.createElement('option'); opt.value = p.name; opt.textContent = p.name; select.appendChild(opt); });
+        document.getElementById('itemAmount').value = ""; renderList(); document.getElementById('revenueModal').style.display = 'flex';
+    }
+    function closeModal() { document.getElementById('revenueModal').style.display = 'none'; if (dayPieChartInstance) { dayPieChartInstance.destroy(); dayPieChartInstance = null; } }
+
+    function renderList() {
+        const listEl = document.getElementById('revenueList'); listEl.innerHTML = "";
+        const data = loadData(); const dayList = data[selectedDateStr] || []; const chartContainer = document.getElementById('dayPieChartContainer');
+        if (dayPieChartInstance) { dayPieChartInstance.destroy(); dayPieChartInstance = null; }
+        const activeProjs = getActiveProjects('filter-cb-proj'); const filteredList = dayList.filter(item => activeProjs.includes(item.name));
+        if (filteredList.length === 0) { listEl.innerHTML = `<li class="no-data">この日の記録はありません</li>`; chartContainer.style.display = 'none'; return; }
+        
+        const summary = {};
+        filteredList.forEach((item, index) => {
+            const li = document.createElement('li'); li.className = 'revenue-item';
+            const originalIndex = dayList.findIndex(orig => orig === item);
+            li.innerHTML = `<span><strong>${escapeHtml(item.name)}</strong> : ¥${item.amount.toLocaleString()}</span><button class="btn-red" onclick="deleteRevenue(${originalIndex})">削除</button>`;
+            listEl.appendChild(li);
+            summary[item.name] = (summary[item.name] || 0) + item.amount;
+        });
+        
+        chartContainer.style.display = 'block';
+        const isDark = document.body.classList.contains('dark-mode');
+
+        const sortedEntries = Object.entries(summary).sort((a, b) => b[1] - a[1]);
+        const sortedLabels = sortedEntries.map(e => e[0]);
+        const sortedData = sortedEntries.map(e => e[1]);
+        const dayTotalAmount = sortedData.reduce((a, b) => a + b, 0);
+
+        const zeroData = new Array(sortedData.length).fill(0);
+
+        dayPieChartInstance = new Chart(document.getElementById('dayPieChart').getContext('2d'), {
+            type: 'doughnut',
+            plugins: [ChartDataLabels, {
+                id: 'centerText',
+                beforeDraw: function(chart) {
+                    if (dayTotalAmount === 0) return;
+                    const currentDataTotal = chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                    if (currentDataTotal === 0) return;
+
+                    var ctx = chart.ctx; var chartArea = chart.chartArea; if(!chartArea) return;
+                    var centerX = (chartArea.left + chartArea.right) / 2;
+                    var centerY = (chartArea.top + chartArea.bottom) / 2;
+                    ctx.save();
+
+                    var alpha = chart.centerAlpha !== undefined ? chart.centerAlpha : 1;
+                    ctx.globalAlpha = alpha;
+
+                    var fontSize = (chartArea.bottom - chartArea.top) / 10;
+                    ctx.font = "bold " + fontSize + "px 'Helvetica Neue', Arial, sans-serif";
+                    ctx.textBaseline = "middle"; ctx.textAlign = "center";
+                    ctx.fillStyle = isDark ? '#edf2f7' : '#4a5568';
+                    ctx.fillText("¥" + dayTotalAmount.toLocaleString(), centerX, centerY); 
+                    ctx.restore();
+                }
+            }],
+            data: {
+                labels: sortedLabels,
+                datasets: [{ data: zeroData, backgroundColor: ['#3182ce', '#319795', '#dd6b20', '#805ad5', '#e53e3e', '#38a169'], borderWidth: 1, borderColor: isDark ? '#2d3748' : '#ffffff' }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                cutout: '65%',
+                layout: {
+                    padding: { right: 80 }
+                },
+                animation: { 
+                    duration: 800, 
+                    animateRotate: true, 
+                    animateScale: false,
+                    onProgress: function(context) {
+                        context.chart.centerAlpha = context.currentStep / context.numSteps;
+                    },
+                    onComplete: function(context) {
+                        context.chart.centerAlpha = 1;
+                    }
+                },
+                plugins: { 
+                    legend: { position: 'right', labels: { color: isDark ? '#edf2f7' : '#4a5568', font: { size: 11 } } },
+                    datalabels: { 
+                        color: '#fff', 
+                        font: { weight: 'bold', size: 11 },
+                        textAlign: 'center',
+                        formatter: (value, ctx) => { 
+                            if (value === 0) return null;
+                            const currentTotal = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0); 
+                            if (currentTotal === 0) return null;
+                            const percentage = (value / currentTotal) * 100; 
+                            if (percentage < 5) return null; 
+                            const label = ctx.chart.data.labels[ctx.dataIndex];
+                            return `${label}\n¥${value.toLocaleString()}\n${percentage.toFixed(1)}%`;
+                        } 
+                    }
+                }
+            }
+        });
+
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                if (dayPieChartInstance) {
+                    dayPieChartInstance.data.datasets[0].data = sortedData;
+                    dayPieChartInstance.update();
+                }
+            }, 60);
+        });
+    }
+
+    function addRevenue() {
+        const projName = document.getElementById('itemProjSelect').value;
+        const amount = parseInt(document.getElementById('itemAmount').value, 10);
+        if (!projName || isNaN(amount) || amount <= 0) return;
+        const data = loadData(); if (!data[selectedDateStr]) data[selectedDateStr] = [];
+        const existingIdx = data[selectedDateStr].findIndex(item => item.name === projName);
+        if (existingIdx !== -1) data[selectedDateStr][existingIdx].amount += amount; else data[selectedDateStr].push({ name: projName, amount: amount });
+        saveData(data); refreshCalendar(); renderList(); refreshMyPageChartsIfVisible(); document.getElementById('itemAmount').value = "";
+    }
+
+    function deleteRevenue(originalIndex) {
+        const data = loadData(); const dayList = data[selectedDateStr] || []; dayList.splice(originalIndex, 1);
+        if (dayList.length === 0) delete data[selectedDateStr]; else data[selectedDateStr] = dayList;
+        saveData(data); refreshCalendar(); renderList(); refreshMyPageChartsIfVisible();
+    }
+
+    function adjustTrendsDate(type, delta) {
+        const input = document.getElementById('trendsMonthSelector');
+        if (!input.value) return;
+        const date = new Date(input.value);
+
+        if (type === 'step') {
+            if (currentTrendsUnit === 'day') { date.setDate(date.getDate() + (delta * 7)); } 
+            else if (currentTrendsUnit === 'week') { date.setDate(date.getDate() + (delta * 7)); } 
+            else if (currentTrendsUnit === 'month') { date.setMonth(date.getMonth() + delta); } 
+            else if (currentTrendsUnit === 'year') { date.setFullYear(date.getFullYear() + delta); }
+        } else if (type === 'month') { date.setMonth(date.getMonth() + delta); }
+
+        input.value = date.toISOString().split('T')[0];
+        renderTrendsChart();
+        if (calendar && currentTrendsUnit === 'day') calendar.gotoDate(date);
+    }
+
+    function renderTrendsChart(shouldAutoScroll = true) {
+        const canvas = document.getElementById('monthlyLineChart');
+        if (monthlyLineChartInstance) { monthlyLineChartInstance.destroy(); monthlyLineChartInstance = null; }
+        const dateInput = document.getElementById('trendsMonthSelector');
+        if (!dateInput || !dateInput.value) return;
+        
+        const startDate = new Date(dateInput.value); const data = loadData(); const activeProjs = getActiveProjects('trends-filter-cb-proj');
+        const labels = [], chartData = []; let total = 0;
+        const dateLabelEl = document.getElementById('trendsDateLabel');
+        let displayTitle = ''; let unitText = '日'; let dataCount = 0;
+
+        if (currentTrendsUnit === 'day') {
+            unitText = '日'; let displayDays = 30; if (startDate.getDate() === 1) { displayDays = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0).getDate(); }
+            dataCount = displayDays;
+            for (let i = 0; i < displayDays; i++) {
+                const currentDate = new Date(startDate); currentDate.setDate(startDate.getDate() + i);
+                const y = currentDate.getFullYear(); const m = String(currentDate.getMonth() + 1).padStart(2, '0'); const d = String(currentDate.getDate()).padStart(2, '0');
+                const dateStr = `${y}-${m}-${d}`; labels.push(`${currentDate.getMonth() + 1}/${currentDate.getDate()}`);
+                const dayTotal = (data[dateStr] || []).reduce((sum, item) => { return activeProjs.includes(item.name) ? sum + item.amount : sum; }, 0);
+                chartData.push(dayTotal); total += dayTotal;
+            }
+            const endDate = new Date(startDate); endDate.setDate(startDate.getDate() + displayDays - 1);
+            displayTitle = `${startDate.getMonth()+1}/${startDate.getDate()} ~ ${endDate.getMonth()+1}/${endDate.getDate()} の合計`;
+        } else if (currentTrendsUnit === 'week') {
+            unitText = '週'; const weeks = 12; dataCount = weeks;
+            const dayOfWeek = startDate.getDay() || 7; startDate.setDate(startDate.getDate() - dayOfWeek + 1);
+            const endDate = new Date(startDate); endDate.setDate(endDate.getDate() + weeks * 7 - 1);
+            displayTitle = `${startDate.getMonth()+1}/${startDate.getDate()} ~ ${endDate.getMonth()+1}/${endDate.getDate()} の合計`;
+            dateLabelEl.textContent = `${startDate.getFullYear()}年${startDate.getMonth()+1}月 (週単位)`;
+
+            for (let w = 0; w < weeks; w++) {
+                let weekTotal = 0; const wStart = new Date(startDate); wStart.setDate(wStart.getDate() + w * 7); labels.push(`${wStart.getMonth()+1}/${wStart.getDate()}~`);
+                for (let i = 0; i < 7; i++) {
+                    const c = new Date(wStart); c.setDate(c.getDate() + i);
+                    const y = c.getFullYear(); const m = String(c.getMonth() + 1).padStart(2, '0'); const d = String(c.getDate()).padStart(2, '0');
+                    const dateStr = `${y}-${m}-${d}`; weekTotal += (data[dateStr] || []).reduce((sum, item) => { return activeProjs.includes(item.name) ? sum + item.amount : sum; }, 0);
+                }
+                chartData.push(weekTotal); total += weekTotal;
+            }
+        } else if (currentTrendsUnit === 'month') {
+            unitText = '月'; const months = 12; dataCount = months; startDate.setDate(1);
+            const endDate = new Date(startDate); endDate.setMonth(endDate.getMonth() + months - 1);
+            displayTitle = `${startDate.getFullYear()}年${startDate.getMonth()+1}月 ~ ${endDate.getFullYear()}年${endDate.getMonth()+1}月 の合計`;
+            dateLabelEl.textContent = `${startDate.getFullYear()}年${startDate.getMonth()+1}月 起点`;
+
+            for (let m = 0; m < months; m++) {
+                let monthTotal = 0; const targetDate = new Date(startDate); targetDate.setMonth(targetDate.getMonth() + m);
+                const targetY = targetDate.getFullYear(); const targetM = targetDate.getMonth() + 1; labels.push(`${targetY}/${targetM}`);
+                const daysInMonth = new Date(targetY, targetM, 0).getDate();
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const dateStr = `${targetY}-${String(targetM).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                    monthTotal += (data[dateStr] || []).reduce((sum, item) => { return activeProjs.includes(item.name) ? sum + item.amount : sum; }, 0);
+                }
+                chartData.push(monthTotal); total += monthTotal;
+            }
+        } else if (currentTrendsUnit === 'year') {
+            unitText = '年'; const years = 7; dataCount = years;
+            displayTitle = `${startDate.getFullYear()}年 ~ ${startDate.getFullYear() + years - 1}年 の合計`;
+            dateLabelEl.textContent = `${startDate.getFullYear()}年 起点`;
+
+            for (let y = 0; y < years; y++) {
+                let yearTotal = 0; const targetY = startDate.getFullYear() + y; labels.push(`${targetY}年`);
+                for (let m = 1; m <= 12; m++) {
+                    const daysInMonth = new Date(targetY, m, 0).getDate();
+                    for (let d = 1; d <= daysInMonth; d++) {
+                        const dateStr = `${targetY}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+                        yearTotal += (data[dateStr] || []).reduce((sum, item) => { return activeProjs.includes(item.name) ? sum + item.amount : sum; }, 0);
+                    }
+                }
+                chartData.push(yearTotal); total += yearTotal;
+            }
+        }
+
+        document.getElementById('trendsTotalDisplay').textContent = displayTitle + `: ¥${total.toLocaleString()}`;
+        const avgAmount = dataCount > 0 ? Math.round(total / dataCount) : 0;
+        const avgEl = document.getElementById('trendsAverageDisplay'); if (avgEl) avgEl.textContent = `${unitText}平均: ¥${avgAmount.toLocaleString()}`;
+
+        const isDark = document.body.classList.contains('dark-mode');
+        monthlyLineChartInstance = new Chart(canvas.getContext('2d'), {
+            type: 'line',
+            data: { labels: labels, datasets: [{ data: chartData, borderColor: isDark ? '#63b3ed' : '#3182ce', backgroundColor: isDark ? 'rgba(99, 179, 237, 0.15)' : 'rgba(49, 130, 206, 0.1)', borderWidth: 2.5, fill: true, tension: 0.15, pointRadius: 2, pointHoverRadius: 6 }] },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { color: isDark ? '#4a5568' : '#e2e8f0' }, ticks: { color: isDark ? '#edf2f7' : '#4a5568', maxRotation: 0, autoSkip: true } },
+                    y: { beginAtZero: true, grid: { color: isDark ? '#4a5568' : '#e2e8f0' }, ticks: { color: isDark ? '#edf2f7' : '#4a5568', callback: function(v) { return '¥' + v.toLocaleString(); } } }
+                },
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx) { return ` ¥${ctx.parsed.y.toLocaleString()}`; } } } }
+            }
+        });
+    }
+
+    function renderRatioChart() {
+        const oldCanvas = document.getElementById('ratioPieChart');
+        if (!oldCanvas) return;
+
+        if (ratioPieChartInstance) { ratioPieChartInstance.destroy(); ratioPieChartInstance = null; }
+
+        const parent = oldCanvas.parentNode;
+        parent.innerHTML = '<canvas id="ratioPieChart"></canvas>';
+        const canvas = document.getElementById('ratioPieChart');
+
+        const monthInput = document.getElementById('ratioMonthSelector').value;
+        if (!monthInput) return;
+        
+        const [year, month] = monthInput.split('-').map(Number);
+        const data = loadData();
+        const activeProjs = getActiveProjects('ratio-filter-cb-proj');
+        const summary = {};
+        let total = 0;
+
+        for (const dateStr in data) {
+            const [y, m] = dateStr.split('-').map(Number);
+            if (y === year && m === month) {
+                data[dateStr].forEach(item => {
+                    if (activeProjs.includes(item.name)) {
+                        summary[item.name] = (summary[item.name] || 0) + item.amount;
+                        total += item.amount;
+                    }
+                });
+            }
+        }
+
+        document.getElementById('ratioTotalDisplay').textContent = `${month}月の合計: ¥${total.toLocaleString()}`;
+        const isDark = document.body.classList.contains('dark-mode');
+        
+        const sortedEntries = Object.entries(summary).sort((a, b) => b[1] - a[1]);
+        const sortedLabels = sortedEntries.map(e => e[0]);
+        const sortedData = sortedEntries.map(e => e[1]);
+        const colors = ['#3182ce', '#319795', '#dd6b20', '#805ad5', '#e53e3e', '#38a169', '#d69e2e'];
+
+        const tableContainer = document.getElementById('ratioTableContainer');
+        if (tableContainer) {
+            if (sortedEntries.length === 0) {
+                tableContainer.innerHTML = `<div style="text-align:center; color:#718096; margin-top:20px;">データがありません</div>`;
+            } else {
+                const textColor = isDark ? '#edf2f7' : '#2d3748';
+                const borderColor = isDark ? '#4a5568' : '#edf2f7';
+                let tableHTML = `<table style="width: 100%; border-collapse: collapse; text-align: left; color: ${textColor};">`;
+                tableHTML += `<thead><tr style="border-bottom: 2px solid ${borderColor}; color: ${isDark ? '#cbd5e0' : '#4a5568'};">`;
+                tableHTML += `<th style="padding: 10px;">項目</th><th style="padding: 10px; text-align: right;">金額</th><th style="padding: 10px; text-align: right;">割合</th></tr></thead><tbody>`;
+                
+                sortedEntries.forEach((entry, index) => {
+                    const label = entry[0]; const val = entry[1];
+                    const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+                    const color = colors[index % colors.length];
+                    tableHTML += `<tr style="border-bottom: 1px solid ${borderColor};">`;
+                    tableHTML += `<td style="padding: 10px;"><span style="display:inline-block; width:12px; height:12px; background-color:${color}; margin-right:8px; border-radius:2px;"></span>${escapeHtml(label)}</td>`;
+                    tableHTML += `<td style="padding: 10px; text-align: right;">¥${val.toLocaleString()}</td>`;
+                    tableHTML += `<td style="padding: 10px; text-align: right;">${pct}%</td>`;
+                    tableHTML += `</tr>`;
+                });
+                tableHTML += `</tbody></table>`; tableContainer.innerHTML = tableHTML;
+            }
+        }
+        
+        const zeroData = new Array(sortedData.length).fill(0);
+
+        ratioPieChartInstance = new Chart(canvas.getContext('2d'), {
+            type: 'doughnut',
+            plugins: [ChartDataLabels, {
+                id: 'centerText',
+                beforeDraw: function(chart) {
+                    if (total === 0) return;
+                    var ctx = chart.ctx; var chartArea = chart.chartArea; if(!chartArea) return;
+                    var centerX = (chartArea.left + chartArea.right) / 2;
+                    var centerY = (chartArea.top + chartArea.bottom) / 2;
+                    ctx.save();
+                    var fontSize = (chartArea.bottom - chartArea.top) / 10;
+                    ctx.font = "bold " + fontSize + "px 'Helvetica Neue', Arial, sans-serif";
+                    ctx.textBaseline = "middle"; ctx.textAlign = "center";
+                    ctx.fillStyle = isDark ? '#edf2f7' : '#4a5568';
+                    ctx.fillText("¥" + total.toLocaleString(), centerX, centerY); 
+                    ctx.restore();
+                }
+            }],
+            data: {
+                labels: sortedLabels,
+                datasets: [{ 
+                    data: zeroData, 
+                    backgroundColor: colors, 
+                    borderWidth: 1, 
+                    borderColor: isDark ? '#2d3748' : '#ffffff' 
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                cutout: '65%',
+                animation: {
+                    duration: 1000,
+                    animateRotate: true,
+                    animateScale: false
+                },
+                plugins: { 
+                    legend: { display: false },
+                    datalabels: {
+                        color: '#fff',
+                        font: { weight: 'bold', size: 12 },
+                        textAlign: 'center',
+                        formatter: (value, ctx) => {
+                            if (value === 0) return null;
+                            const currentTotal = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            if (currentTotal === 0) return null;
+                            const percentage = (value / currentTotal) * 100;
+                            if (percentage < 5) return null;
+                            const label = ctx.chart.data.labels[ctx.dataIndex];
+                            return `${label}\n¥${value.toLocaleString()}\n${percentage.toFixed(1)}%`;
+                        }
+                    }
+                }
+            }
+        });
+
+        requestAnimationFrame(() => {
+            setTimeout(() => {
+                if (ratioPieChartInstance) {
+                    ratioPieChartInstance.data.datasets[0].data = sortedData;
+                    ratioPieChartInstance.update();
+                }
+            }, 60);
+        });
+    }
+
+    function destroyAverageCharts() {
+        averageChartInstances.forEach(chart => { if (chart) chart.destroy(); });
+        averageChartInstances = [];
+    }
+
+    function getWeekOfMonthIndex(day) {
+        if (day <= 7) return 0;
+        if (day <= 14) return 1;
+        if (day <= 21) return 2;
+        return 3;
+    }
+
+    function computeAverageCardData(unit, activeProjs) {
+        const data = loadData();
+        const dayLabels = ['月曜日', '火曜日', '水曜日', '木曜日', '金曜日', '土曜日', '日曜日'];
+        const weekLabels = ['第一週', '第二週', '第三週', '第四週'];
+        const monthLabels = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+
+        if (unit === 'day') {
+            const totals = Array(7).fill(0);
+            const counts = Array(7).fill(0);
+            const projectTotals = Array.from({ length: 7 }, () => ({}));
+
+            for (const dateStr in data) {
+                const [y, m, d] = dateStr.split('-').map(Number);
+                const date = new Date(y, m - 1, d);
+                const dow = date.getDay();
+                const bucket = dow === 0 ? 6 : dow - 1;
+                let dayTotal = 0;
+                (data[dateStr] || []).forEach(item => {
+                    if (activeProjs.includes(item.name)) {
+                        dayTotal += item.amount;
+                        projectTotals[bucket][item.name] = (projectTotals[bucket][item.name] || 0) + item.amount;
+                    }
+                });
+                totals[bucket] += dayTotal;
+                counts[bucket]++;
+            }
+
+            return dayLabels.map((label, i) => {
+                const average = counts[i] > 0 ? Math.round(totals[i] / counts[i]) : 0;
+                const projectSummary = {};
+                Object.entries(projectTotals[i]).forEach(([name, sum]) => {
+                    projectSummary[name] = counts[i] > 0 ? Math.round(sum / counts[i]) : 0;
+                });
+                return { label, average, projectSummary };
+            });
+        }
+
+        if (unit === 'week') {
+            const weekYM = Array.from({ length: 4 }, () => ({}));
+            const weekYMProjects = Array.from({ length: 4 }, () => ({}));
+
+            for (const dateStr in data) {
+                const [y, m, d] = dateStr.split('-').map(Number);
+                const w = getWeekOfMonthIndex(d);
+                const ym = `${y}-${String(m).padStart(2, '0')}`;
+                let dayTotal = 0;
+                (data[dateStr] || []).forEach(item => {
+                    if (activeProjs.includes(item.name)) {
+                        dayTotal += item.amount;
+                        if (!weekYMProjects[w][ym]) weekYMProjects[w][ym] = {};
+                        weekYMProjects[w][ym][item.name] = (weekYMProjects[w][ym][item.name] || 0) + item.amount;
+                    }
+                });
+                weekYM[w][ym] = (weekYM[w][ym] || 0) + dayTotal;
+            }
+
+            return weekLabels.map((label, w) => {
+                const keys = Object.keys(weekYM[w]);
+                const average = keys.length ? Math.round(keys.reduce((s, k) => s + weekYM[w][k], 0) / keys.length) : 0;
+                const projectSummary = {};
+                const projAgg = {};
+                keys.forEach(ym => {
+                    Object.entries(weekYMProjects[w][ym] || {}).forEach(([name, val]) => {
+                        if (!projAgg[name]) projAgg[name] = [];
+                        projAgg[name].push(val);
+                    });
+                });
+                Object.entries(projAgg).forEach(([name, vals]) => {
+                    projectSummary[name] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+                });
+                return { label, average, projectSummary };
+            });
+        }
+
+        const monthYM = Array.from({ length: 12 }, () => ({}));
+        const monthYMProjects = Array.from({ length: 12 }, () => ({}));
+
+        for (const dateStr in data) {
+            const [y, m, d] = dateStr.split('-').map(Number);
+            const ym = `${y}-${String(m).padStart(2, '0')}`;
+            const bucket = m - 1;
+            let dayTotal = 0;
+            (data[dateStr] || []).forEach(item => {
+                if (activeProjs.includes(item.name)) {
+                    dayTotal += item.amount;
+                    if (!monthYMProjects[bucket][ym]) monthYMProjects[bucket][ym] = {};
+                    monthYMProjects[bucket][ym][item.name] = (monthYMProjects[bucket][ym][item.name] || 0) + item.amount;
+                }
+            });
+            monthYM[bucket][ym] = (monthYM[bucket][ym] || 0) + dayTotal;
+        }
+
+        return monthLabels.map((label, i) => {
+            const keys = Object.keys(monthYM[i]);
+            const average = keys.length ? Math.round(keys.reduce((s, k) => s + monthYM[i][k], 0) / keys.length) : 0;
+            const projectSummary = {};
+            const projAgg = {};
+            keys.forEach(ym => {
+                Object.entries(monthYMProjects[i][ym] || {}).forEach(([name, val]) => {
+                    if (!projAgg[name]) projAgg[name] = [];
+                    projAgg[name].push(val);
+                });
+            });
+            Object.entries(projAgg).forEach(([name, vals]) => {
+                projectSummary[name] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+            });
+            return { label, average, projectSummary };
+        });
+    }
+
+    function renderAverageCharts() {
+        const grid = document.getElementById('averageCardsGrid');
+        if (!grid) return;
+
+        destroyAverageCharts();
+        grid.innerHTML = '';
+
+        const activeProjs = getActiveProjects('average-filter-cb-proj');
+        const cardsData = computeAverageCardData(currentAverageUnit, activeProjs);
+        const colors = ['#3182ce', '#319795', '#dd6b20', '#805ad5', '#e53e3e', '#38a169', '#d69e2e'];
+        const isDark = document.body.classList.contains('dark-mode');
+        const subColor = isDark ? '#a0aec0' : '#718096';
+
+        cardsData.forEach((cardData, index) => {
+            const card = document.createElement('div');
+            card.className = 'average-card';
+
+            const sortedEntries = Object.entries(cardData.projectSummary).sort((a, b) => b[1] - a[1]);
+            const sortedLabels = sortedEntries.map(e => e[0]);
+            const sortedData = sortedEntries.map(e => e[1]);
+            const total = sortedData.reduce((a, b) => a + b, 0);
+
+            let legendHTML = '';
+            if (sortedEntries.length === 0) {
+                legendHTML = `<div class="average-card-empty">データがありません</div>`;
+            } else {
+                sortedEntries.forEach((entry, i) => {
+                    const pct = total > 0 ? ((entry[1] / total) * 100).toFixed(1) : '0.0';
+                    const color = colors[i % colors.length];
+                    legendHTML += `<div class="average-card-legend-row">
+                        <div class="average-card-legend-name"><span class="average-card-legend-dot" style="background:${color};"></span>${escapeHtml(entry[0])}</div>
+                        <span style="color:${subColor}; white-space:nowrap;">¥${entry[1].toLocaleString()} / ${pct}%</span>
+                    </div>`;
+                });
+            }
+
+            card.innerHTML = `
+                <div class="average-card-label">${escapeHtml(cardData.label)}</div>
+                <div class="average-card-amount">平均: ¥${cardData.average.toLocaleString()}</div>
+                <div class="average-card-chart"><canvas id="averageChart-${index}"></canvas></div>
+                <div class="average-card-legend">${legendHTML}</div>
+            `;
+            grid.appendChild(card);
+
+            const canvas = document.getElementById(`averageChart-${index}`);
+            if (!canvas || sortedEntries.length === 0) return;
+
+            const zeroData = new Array(sortedData.length).fill(0);
+            const chartInstance = new Chart(canvas.getContext('2d'), {
+                type: 'doughnut',
+                plugins: [ChartDataLabels, {
+                    id: 'averageCenterText' + index,
+                    beforeDraw: function(chart) {
+                        if (cardData.average === 0) return;
+                        const ctx = chart.ctx;
+                        const chartArea = chart.chartArea;
+                        if (!chartArea) return;
+                        const centerX = (chartArea.left + chartArea.right) / 2;
+                        const centerY = (chartArea.top + chartArea.bottom) / 2;
+                        ctx.save();
+                        const chartHeight = chartArea.bottom - chartArea.top;
+                        const fontSize = currentAverageUnit === 'day'
+                            ? Math.max(8, chartHeight / 11)
+                            : Math.max(10, chartHeight / 8);
+                        ctx.font = 'bold ' + fontSize + "px 'Helvetica Neue', Arial, sans-serif";
+                        ctx.textBaseline = 'middle';
+                        ctx.textAlign = 'center';
+                        ctx.fillStyle = isDark ? '#edf2f7' : '#4a5568';
+                        ctx.fillText('¥' + cardData.average.toLocaleString(), centerX, centerY);
+                        ctx.restore();
+                    }
+                }],
+                data: {
+                    labels: sortedLabels,
+                    datasets: [{
+                        data: zeroData,
+                        backgroundColor: colors,
+                        borderWidth: 1,
+                        borderColor: isDark ? '#2d3748' : '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '62%',
+                    animation: { duration: 800, animateRotate: true, animateScale: false },
+                    plugins: {
+                        legend: { display: false },
+                        datalabels: {
+                            color: '#fff',
+                            font: { weight: 'bold', size: 9 },
+                            textAlign: 'center',
+                            formatter: (value, ctx) => {
+                                if (value === 0) return null;
+                                const currentTotal = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                                if (currentTotal === 0) return null;
+                                const percentage = (value / currentTotal) * 100;
+                                if (percentage < 8) return null;
+                                return `${percentage.toFixed(0)}%`;
+                            }
+                        }
+                    }
+                }
+            });
+
+            averageChartInstances.push(chartInstance);
+            const capturedIndex = averageChartInstances.length - 1;
+            requestAnimationFrame(() => {
+                setTimeout(() => {
+                    const inst = averageChartInstances[capturedIndex];
+                    if (inst) {
+                        inst.data.datasets[0].data = sortedData;
+                        inst.update();
+                    }
+                }, 60);
+            });
+        });
+    }
+
+    /* ================= マイページ・今日の収益セクション ================= */
+    function renderMyPageTodaySection() {
+        const today = new Date();
+        const dateStr = formatLocalDateKey(today);
+        const dayNames = ['日', '月', '火', '水', '木', '金', '土'];
+        const dayName = dayNames[today.getDay()];
+
+        const labelEl = document.getElementById('myPageTodayDateLabel');
+        if (labelEl) labelEl.textContent = `${today.getFullYear()}年${today.getMonth() + 1}月${today.getDate()}日（${dayName}）`;
+
+        const data = loadData();
+        const dayList = data[dateStr] || [];
+        const activeProjs = getActiveProjects('mypage-today-filter-cb-proj');
+        const filteredList = dayList.filter(item => activeProjs.includes(item.name));
+        const total = filteredList.reduce((sum, item) => sum + item.amount, 0);
+
+        const totalEl = document.getElementById('myPageTodayTotalDisplay');
+        if (totalEl) totalEl.textContent = `本日: ¥${total.toLocaleString()}`;
+
+        const listEl = document.getElementById('myPageTodayList');
+        if (!listEl) return;
+
+        const isDark = document.body.classList.contains('dark-mode');
+        const colors = ['#3182ce', '#319795', '#dd6b20', '#805ad5', '#e53e3e', '#38a169', '#d69e2e'];
+
+        if (filteredList.length === 0) {
+            const emptyColor = isDark ? '#718096' : '#a0aec0';
+            listEl.innerHTML = `<div style="text-align:center; padding: 22px 0; color: ${emptyColor};">
+                <div style="font-size: 26px; margin-bottom: 8px;">📭</div>
+                <div style="font-size: 14px;">本日の収益はまだありません</div>
+            </div>`;
+            return;
+        }
+
+        const borderColor = isDark ? '#4a5568' : '#edf2f7';
+        const textColor = isDark ? '#edf2f7' : '#2d3748';
+        const barBg = isDark ? '#4a5568' : '#e2e8f0';
+        const subColor = isDark ? '#a0aec0' : '#718096';
+
+        let html = '';
+        filteredList.forEach((item, i) => {
+            const color = colors[i % colors.length];
+            const pct = total > 0 ? (item.amount / total) * 100 : 0;
+            html += `<div style="padding: 11px 0; border-bottom: 1px solid ${borderColor}; display: flex; align-items: center; gap: 12px;">
+                <div style="width: 9px; height: 9px; border-radius: 50%; background: ${color}; flex-shrink: 0;"></div>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px;">
+                        <span style="font-weight: 600; color: ${textColor}; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 55%;">${escapeHtml(item.name)}</span>
+                        <span style="font-weight: bold; color: ${color}; font-size: 15px; flex-shrink: 0; margin-left: 10px;">¥${item.amount.toLocaleString()}</span>
+                    </div>
+                    <div style="width: 100%; background: ${barBg}; border-radius: 999px; height: 4px; overflow: hidden;">
+                        <div style="width: ${pct.toFixed(1)}%; background: ${color}; height: 100%; border-radius: 999px;"></div>
+                    </div>
+                </div>
+                <span style="font-size: 12px; color: ${subColor}; white-space: nowrap; flex-shrink: 0; min-width: 36px; text-align: right;">${pct.toFixed(1)}%</span>
+            </div>`;
+        });
+
+        listEl.innerHTML = html;
+    }
+
+    function renderMyPageTodayFilterMenu() {
+        renderFilterItems('myPageTodayFilterMenuContent', 'mypage-today-filter-cb-group', 'mypage-today-filter-cb-proj', 'allMyPageTodayFilterCb', 'updateMyPageTodayFromFilter', 'toggleMyPageTodayGroupFilter', 'toggleAllMyPageTodayFilter');
+        updateAllMyPageTodayCheckboxState();
+    }
+
+    function toggleMyPageTodayFilterMenu(e) {
+        if(e) e.stopPropagation();
+        document.querySelectorAll('.filter-menu-popup').forEach(m => { if(m.id !== 'myPageTodayFilterMenu') m.classList.remove('open'); });
+        document.getElementById('myPageTodayFilterMenu').classList.toggle('open');
+    }
+
+    function toggleMyPageTodayGroupFilter(groupName, isChecked) {
+        document.querySelectorAll(`.mypage-today-filter-cb-proj[data-group="${groupName}"]`).forEach(cb => { cb.checked = isChecked; });
+        updateAllMyPageTodayCheckboxState(); renderMyPageTodaySection();
+    }
+
+    function toggleAllMyPageTodayFilter(isChecked) {
+        document.querySelectorAll('.mypage-today-filter-cb-group, .mypage-today-filter-cb-proj').forEach(cb => { cb.checked = isChecked; });
+        renderMyPageTodaySection();
+    }
+
+    function updateMyPageTodayFromFilter() { updateAllMyPageTodayCheckboxState(); renderMyPageTodaySection(); }
+
+    function updateAllMyPageTodayCheckboxState() {
+        const allCb = document.getElementById('allMyPageTodayFilterCb'); if (!allCb) return;
+        const projsCbs = document.querySelectorAll('.mypage-today-filter-cb-proj');
+        if (projsCbs.length === 0) { allCb.checked = true; return; }
+        allCb.checked = Array.from(projsCbs).every(cb => cb.checked);
+        loadGroups().forEach(g => {
+            const gCb = document.querySelector(`.mypage-today-filter-cb-group[data-group="${g}"]`);
+            if (gCb) { const groupProjsCbs = document.querySelectorAll(`.mypage-today-filter-cb-proj[data-group="${g}"]`); if (groupProjsCbs.length > 0) gCb.checked = Array.from(groupProjsCbs).every(cb => cb.checked); }
+        });
+    }
+
+    function openTodayRevenueModal() {
+        const today = new Date();
+        const dateStr = formatLocalDateKey(today);
+        openModal(dateStr);
+    }
+
+    function escapeHtml(str) { return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;'); }
+
+    /* ================= Google Drive クラウド同期（Google Apps Script） ================= */
+    // ※ google-drive-sync.gs.txt の手順で Apps Script を作成し、下記2つを設定してください（Cloud Console 不要）
+    const GOOGLE_SYNC_SCRIPT_URL = '';  // https://script.google.com/macros/s/AKfycbyZZcYxwEGKr23WE-kHaHsAC2BoIK28EpeHbwYmZtl1YreEUMOpn0oags6aAtcWi2RVtw/exec
+    const GOOGLE_SYNC_TOKEN = '';       // Hn2007822
+
+    let cloudSyncTimer = null;
+    let cloudSyncInProgress = false;
+    let cloudSyncRestoring = false;
+
+    function isGoogleDriveConfigured() {
+        return !!(GOOGLE_SYNC_SCRIPT_URL && GOOGLE_SYNC_TOKEN);
+    }
+
+    function isGoogleDriveConnected() {
+        return localStorage.getItem('my_revenue_drive_connected') === 'true';
+    }
+
+    function getLocalLastExportAt() {
+        return localStorage.getItem('my_revenue_last_export_at') || '';
+    }
+
+    function hasLocalAppData() {
+        const data = loadData();
+        return Object.keys(data).length > 0 ||
+            loadSafeData().length > 0 ||
+            Object.keys(loadGoals()).length > 0 ||
+            loadProjects().some(function(p) { return p.name !== '未分類' || loadGroups().length > 1; });
+    }
+
+    function setLocalLastExportAt(iso) {
+        localStorage.setItem('my_revenue_last_export_at', iso || '');
+    }
+
+    function clearGoogleDriveAuth() {
+        localStorage.setItem('my_revenue_drive_connected', 'false');
+    }
+
+    function formatSyncTime(iso) {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        if (isNaN(d.getTime())) return '—';
+        return d.toLocaleString('ja-JP');
+    }
+
+    function buildSyncUrl(action) {
+        return GOOGLE_SYNC_SCRIPT_URL +
+            (GOOGLE_SYNC_SCRIPT_URL.indexOf('?') >= 0 ? '&' : '?') +
+            'token=' + encodeURIComponent(GOOGLE_SYNC_TOKEN) +
+            '&action=' + encodeURIComponent(action) +
+            '&_=' + Date.now();
+    }
+
+    async function parseSyncResponse(res) {
+        const text = await res.text();
+        try {
+            return JSON.parse(text);
+        } catch (e) {
+            if (text.indexOf('Google') >= 0 && text.indexOf('Sign in') >= 0) {
+                throw new Error('auth_required');
+            }
+            throw new Error('invalid_response');
+        }
+    }
+
+    async function fetchRemoteBackup() {
+        const res = await fetch(buildSyncUrl('load'));
+        if (!res.ok) throw new Error('load_failed');
+        const data = await parseSyncResponse(res);
+        if (data.error) throw new Error(data.error);
+        if (data.empty) return null;
+        return data;
+    }
+
+    async function uploadRemoteBackup(backup) {
+        const res = await fetch(buildSyncUrl('save'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(backup)
+        });
+        const data = await parseSyncResponse(res);
+        if (data.error) throw new Error(data.error);
+        setLocalLastExportAt(backup.exportedAt);
+        localStorage.setItem('my_revenue_last_sync_at', new Date().toISOString());
+    }
+
+    function updateCloudSyncUI(statusText, statusClass) {
+        const statusEl = document.getElementById('cloudSyncStatus');
+        const metaEl = document.getElementById('cloudSyncMeta');
+        const connectBtn = document.getElementById('cloudConnectBtn');
+        const saveBtn = document.getElementById('cloudSaveBtn');
+        const disconnectBtn = document.getElementById('cloudDisconnectBtn');
+        if (!statusEl) return;
+
+        if (!isGoogleDriveConfigured()) {
+            statusEl.textContent = '状態: 未設定';
+            statusEl.className = 'cloud-sync-status error';
+            if (connectBtn) connectBtn.disabled = true;
+            if (saveBtn) saveBtn.disabled = true;
+            if (disconnectBtn) disconnectBtn.style.display = 'none';
+            if (metaEl) metaEl.textContent = 'google-drive-sync.gs.txt の手順で Apps Script を作成し、HTML 内の GOOGLE_SYNC_SCRIPT_URL と GOOGLE_SYNC_TOKEN を設定してください（クレジットカード不要）。';
+            return;
+        }
+
+        const connected = isGoogleDriveConnected();
+        if (statusText) {
+            statusEl.textContent = statusText;
+            statusEl.className = 'cloud-sync-status' + (statusClass ? ' ' + statusClass : '');
+        } else if (connected) {
+            statusEl.textContent = '状態: 接続済み';
+            statusEl.className = 'cloud-sync-status ok';
+        } else {
+            statusEl.textContent = '状態: 未接続';
+            statusEl.className = 'cloud-sync-status';
+        }
+
+        if (connectBtn) {
+            connectBtn.style.display = connected ? 'none' : 'inline-block';
+            connectBtn.disabled = false;
+        }
+        if (saveBtn) saveBtn.disabled = !connected || cloudSyncInProgress;
+        if (disconnectBtn) disconnectBtn.style.display = connected ? 'inline-block' : 'none';
+
+        const lastSync = localStorage.getItem('my_revenue_last_sync_at');
+        if (metaEl) {
+            let meta = connected
+                ? '最終同期: ' + formatSyncTime(lastSync)
+                : '接続すると、起動時に Drive から自動取得し、変更時は自動保存します。';
+            if (window.location.protocol === 'file:') {
+                meta += ' ※ file:// では同期できない場合があります。http/https で開いてください。';
+            }
+            metaEl.textContent = meta;
+        }
+    }
+
+    function applyRemoteBackupIfNewer(backup, silent) {
+        if (!backup || !backup.exportedAt) return false;
+        const localAt = getLocalLastExportAt();
+        if (localAt && backup.exportedAt <= localAt) return false;
+
+        if (!silent && localAt && !confirm('Google Drive のデータの方が新しいです。Drive の内容で上書きしますか？')) {
+            return false;
+        }
+
+        cloudSyncRestoring = true;
+        restoreAllAppData(backup);
+        setLocalLastExportAt(backup.exportedAt);
+        cloudSyncRestoring = false;
+        refreshAfterImport();
+        return true;
+    }
+
+    async function uploadToGoogleDrive(showAlert) {
+        if (!isGoogleDriveConnected() || cloudSyncInProgress || cloudSyncRestoring) return;
+
+        cloudSyncInProgress = true;
+        updateCloudSyncUI('状態: 同期中…', 'syncing');
+
+        try {
+            const backup = getAllAppData();
+            await uploadRemoteBackup(backup);
+            updateCloudSyncUI('状態: 保存完了', 'ok');
+            if (showAlert) alert('Google Drive に保存しました。');
+        } catch (err) {
+            updateCloudSyncUI('状態: 保存に失敗しました', 'error');
+            if (showAlert) alert('Google Drive への保存に失敗しました。\n設定 URL・トークン、Apps Script のデプロイを確認してください。');
+        } finally {
+            cloudSyncInProgress = false;
+            updateCloudSyncUI();
+        }
+    }
+
+    async function pullFromGoogleDrive(silent) {
+        if (!isGoogleDriveConnected() || cloudSyncRestoring) return;
+
+        updateCloudSyncUI('状態: Drive から取得中…', 'syncing');
+        try {
+            const remote = await fetchRemoteBackup();
+            if (remote) {
+                const applied = applyRemoteBackupIfNewer(remote, silent);
+                if (applied) localStorage.setItem('my_revenue_last_sync_at', new Date().toISOString());
+            }
+            updateCloudSyncUI();
+        } catch (err) {
+            if (!silent) updateCloudSyncUI('状態: 取得に失敗しました', 'error');
+            else updateCloudSyncUI();
+        }
+    }
+
+    function scheduleCloudSync() {
+        if (cloudSyncRestoring || !isGoogleDriveConnected()) return;
+        clearTimeout(cloudSyncTimer);
+        cloudSyncTimer = setTimeout(function() { uploadToGoogleDrive(false); }, 2000);
+    }
+
+    async function connectGoogleDrive() {
+        if (!isGoogleDriveConfigured()) {
+            alert('GOOGLE_SYNC_SCRIPT_URL と GOOGLE_SYNC_TOKEN が未設定です。\ngoogle-drive-sync.gs.txt の手順を確認してください。');
+            return;
+        }
+
+        updateCloudSyncUI('状態: 接続中…', 'syncing');
+        try {
+            const remote = await fetchRemoteBackup();
+            if (remote) {
+                const localAt = getLocalLastExportAt();
+                if (!localAt && hasLocalAppData()) {
+                    if (confirm('端末と Google Drive の両方にデータがあります。\nDrive のデータで上書きしますか？\n\n「OK」= Drive のデータを使う\n「キャンセル」= この端末のデータを Drive に保存')) {
+                        applyRemoteBackupIfNewer(remote, true);
+                    } else {
+                        await uploadToGoogleDrive(false);
+                    }
+                } else if (!localAt) {
+                    applyRemoteBackupIfNewer(remote, true);
+                } else if (remote.exportedAt > localAt) {
+                    applyRemoteBackupIfNewer(remote, false);
+                } else {
+                    await uploadToGoogleDrive(false);
+                }
+            } else {
+                await uploadToGoogleDrive(false);
+            }
+            localStorage.setItem('my_revenue_drive_connected', 'true');
+            updateCloudSyncUI('状態: 接続済み', 'ok');
+            alert('Google Drive に接続しました。');
+        } catch (err) {
+            updateCloudSyncUI('状態: 接続エラー', 'error');
+            alert('Google Drive への接続に失敗しました。\nApps Script のデプロイ設定（アクセス: 全員）と URL・トークンを確認してください。');
+        }
+    }
+
+    function disconnectGoogleDrive() {
+        if (!confirm('Google Drive との接続を解除しますか？\n（端末内のデータは残ります）')) return;
+        clearTimeout(cloudSyncTimer);
+        clearGoogleDriveAuth();
+        updateCloudSyncUI();
+    }
+
+    function saveToGoogleDriveNow() {
+        uploadToGoogleDrive(true);
+    }
+
+    function initGoogleDriveSync() {
+        const origSetItem = localStorage.setItem.bind(localStorage);
+        localStorage.setItem = function(key, value) {
+            origSetItem(key, value);
+            if (key.startsWith('my_revenue_') &&
+                !key.startsWith('my_revenue_drive_') &&
+                key !== 'my_revenue_last_sync_at' &&
+                key !== 'my_revenue_last_export_at') {
+                scheduleCloudSync();
+            }
+        };
+    }
+
+    function startGoogleDriveAutoSync() {
+        updateCloudSyncUI();
+        if (!isGoogleDriveConfigured()) return;
+        if (isGoogleDriveConnected()) pullFromGoogleDrive(true);
+    }
+
+    initGoogleDriveSync();
+</script>
+
+</body>
+</html>
