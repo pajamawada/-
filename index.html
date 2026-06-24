@@ -556,6 +556,10 @@
         .cloud-sync-status.ok { color: #38a169; }
         .cloud-sync-status.error { color: #e53e3e; }
         .cloud-sync-meta { font-size: 11px; color: #718096; margin: 8px 0 0 0; }
+        .cloud-sync-settings { display: flex; flex-direction: column; gap: 6px; margin-bottom: 10px; }
+        .cloud-sync-settings label { font-size: 12px; font-weight: bold; color: #4a5568; }
+        .cloud-sync-settings input { width: 100%; box-sizing: border-box; font-size: 13px; }
+        body.dark-mode .cloud-sync-settings label { color: #cbd5e0; }
         body.dark-mode .cloud-sync-status { color: #edf2f7; }
         body.dark-mode .cloud-sync-meta { color: #a0aec0; }
 
@@ -632,6 +636,12 @@
                 <h5>☁️ Google Drive クラウド同期</h5>
                 <p>パソコンとスマホでデータを同期します。変更があると自動で Google Drive に保存されます。（Google Apps Script 使用・Cloud Console 不要）</p>
                 <div class="cloud-sync-status" id="cloudSyncStatus">状態: 未接続</div>
+                <div class="cloud-sync-settings" id="cloudSyncSettings">
+                    <label for="cloudSyncUrlInput">Apps Script URL（末尾 /exec）</label>
+                    <input type="url" id="cloudSyncUrlInput" placeholder="https://script.google.com/macros/s/.../exec">
+                    <label for="cloudSyncTokenInput">同期パスワード（SYNC_TOKEN）</label>
+                    <input type="password" id="cloudSyncTokenInput" placeholder="Apps Script に設定したパスワード">
+                </div>
                 <div class="backup-btn-row">
                     <button class="btn-green" id="cloudConnectBtn" onclick="connectGoogleDrive()">Google Drive に接続</button>
                     <button class="btn-outline" id="cloudSaveBtn" onclick="saveToGoogleDriveNow()" disabled>今すぐ Google Drive に保存</button>
@@ -1104,6 +1114,7 @@
     function openBackupModal() {
         if (document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
         document.getElementById('backupModal').style.display = 'flex';
+        if (typeof loadCloudSyncSettingsToUI === 'function') loadCloudSyncSettingsToUI();
         if (typeof updateCloudSyncUI === 'function') updateCloudSyncUI();
     }
 
@@ -3304,15 +3315,43 @@
 
     /* ================= Google Drive クラウド同期（Google Apps Script） ================= */
     // ※ google-drive-sync.gs.txt の手順で Apps Script を作成し、下記2つを設定してください（Cloud Console 不要）
-    const GOOGLE_SYNC_SCRIPT_URL = '';  // https://script.google.com/macros/s/AKfycbyZZcYxwEGKr23WE-kHaHsAC2BoIK28EpeHbwYmZtl1YreEUMOpn0oags6aAtcWi2RVtw/exec
-    const GOOGLE_SYNC_TOKEN = '';       // Hn2007822
+    const GOOGLE_SYNC_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZZcYxwEGKr23WE-kHaHsAC2BoIK28EpeHbwYmZtl1YreEUMOpn0oags6aAtcWi2RVtw/exec';
+    const GOOGLE_SYNC_TOKEN = 'Hn2007822';
 
     let cloudSyncTimer = null;
     let cloudSyncInProgress = false;
     let cloudSyncRestoring = false;
 
+    function getSyncScriptUrl() {
+        const input = document.getElementById('cloudSyncUrlInput');
+        if (input && input.value.trim()) return input.value.trim();
+        return localStorage.getItem('my_revenue_sync_script_url') || GOOGLE_SYNC_SCRIPT_URL || '';
+    }
+
+    function getSyncToken() {
+        const input = document.getElementById('cloudSyncTokenInput');
+        if (input && input.value.trim()) return input.value.trim();
+        return localStorage.getItem('my_revenue_sync_token') || GOOGLE_SYNC_TOKEN || '';
+    }
+
+    function saveCloudSyncSettingsFromUI() {
+        const url = getSyncScriptUrl();
+        const token = getSyncToken();
+        if (url) localStorage.setItem('my_revenue_sync_script_url', url);
+        if (token) localStorage.setItem('my_revenue_sync_token', token);
+    }
+
+    function loadCloudSyncSettingsToUI() {
+        const urlEl = document.getElementById('cloudSyncUrlInput');
+        const tokenEl = document.getElementById('cloudSyncTokenInput');
+        const savedUrl = localStorage.getItem('my_revenue_sync_script_url') || GOOGLE_SYNC_SCRIPT_URL || '';
+        const savedToken = localStorage.getItem('my_revenue_sync_token') || GOOGLE_SYNC_TOKEN || '';
+        if (urlEl) urlEl.value = savedUrl;
+        if (tokenEl) tokenEl.value = savedToken;
+    }
+
     function isGoogleDriveConfigured() {
-        return !!(GOOGLE_SYNC_SCRIPT_URL && GOOGLE_SYNC_TOKEN);
+        return !!(getSyncScriptUrl() && getSyncToken());
     }
 
     function isGoogleDriveConnected() {
@@ -3347,9 +3386,10 @@
     }
 
     function buildSyncUrl(action) {
-        return GOOGLE_SYNC_SCRIPT_URL +
-            (GOOGLE_SYNC_SCRIPT_URL.indexOf('?') >= 0 ? '&' : '?') +
-            'token=' + encodeURIComponent(GOOGLE_SYNC_TOKEN) +
+        const baseUrl = getSyncScriptUrl();
+        return baseUrl +
+            (baseUrl.indexOf('?') >= 0 ? '&' : '?') +
+            'token=' + encodeURIComponent(getSyncToken()) +
             '&action=' + encodeURIComponent(action) +
             '&_=' + Date.now();
     }
@@ -3396,12 +3436,12 @@
         if (!statusEl) return;
 
         if (!isGoogleDriveConfigured()) {
-            statusEl.textContent = '状態: 未設定';
+            statusEl.textContent = '状態: 未設定（URL とパスワードを入力）';
             statusEl.className = 'cloud-sync-status error';
-            if (connectBtn) connectBtn.disabled = true;
+            if (connectBtn) connectBtn.disabled = false;
             if (saveBtn) saveBtn.disabled = true;
             if (disconnectBtn) disconnectBtn.style.display = 'none';
-            if (metaEl) metaEl.textContent = 'google-drive-sync.gs.txt の手順で Apps Script を作成し、HTML 内の GOOGLE_SYNC_SCRIPT_URL と GOOGLE_SYNC_TOKEN を設定してください（クレジットカード不要）。';
+            if (metaEl) metaEl.textContent = '上の2つの欄に Apps Script の URL と SYNC_TOKEN を入力してから「Google Drive に接続」を押してください。';
             return;
         }
 
@@ -3497,8 +3537,17 @@
     }
 
     async function connectGoogleDrive() {
+        saveCloudSyncSettingsFromUI();
+
         if (!isGoogleDriveConfigured()) {
-            alert('GOOGLE_SYNC_SCRIPT_URL と GOOGLE_SYNC_TOKEN が未設定です。\ngoogle-drive-sync.gs.txt の手順を確認してください。');
+            alert('Apps Script URL と同期パスワードを入力してください。');
+            const urlEl = document.getElementById('cloudSyncUrlInput');
+            if (urlEl) urlEl.focus();
+            return;
+        }
+
+        if (window.location.protocol === 'file:') {
+            alert('HTML をダブルクリック（file://）で開いていると同期できません。\n\nLive Server や GitHub Pages など、http / https の URL で開いてから再度お試しください。');
             return;
         }
 
@@ -3528,7 +3577,15 @@
             alert('Google Drive に接続しました。');
         } catch (err) {
             updateCloudSyncUI('状態: 接続エラー', 'error');
-            alert('Google Drive への接続に失敗しました。\nApps Script のデプロイ設定（アクセス: 全員）と URL・トークンを確認してください。');
+            let msg = 'Google Drive への接続に失敗しました。';
+            if (err.message === 'unauthorized') {
+                msg += '\n\n同期パスワードが Apps Script の SYNC_TOKEN と一致しているか確認してください。';
+            } else if (err.message === 'auth_required' || err.message === 'invalid_response') {
+                msg += '\n\nApps Script のデプロイ設定（アクセス: 全員）と URL を確認してください。';
+            } else {
+                msg += '\n\nApps Script のデプロイ設定（アクセス: 全員）と URL・パスワードを確認してください。';
+            }
+            alert(msg);
         }
     }
 
@@ -3557,8 +3614,10 @@
     }
 
     function startGoogleDriveAutoSync() {
+        loadCloudSyncSettingsToUI();
         updateCloudSyncUI();
         if (!isGoogleDriveConfigured()) return;
+        if (window.location.protocol === 'file:') return;
         if (isGoogleDriveConnected()) pullFromGoogleDrive(true);
     }
 
