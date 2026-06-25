@@ -3301,7 +3301,7 @@
                     x: { grid: { color: isDark ? '#4a5568' : '#e2e8f0' }, ticks: { color: isDark ? '#edf2f7' : '#4a5568', maxRotation: 0, autoSkip: true } },
                     y: { beginAtZero: true, grid: { color: isDark ? '#4a5568' : '#e2e8f0' }, ticks: { color: isDark ? '#edf2f7' : '#4a5568', callback: function(v) { return '¥' + v.toLocaleString(); } } }
                 },
-                plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(ctx) { return ` ¥${ctx.parsed.y.toLocaleString()}`; } } } }
+                plugins: { legend: { display: false }, datalabels: { display: false }, tooltip: { callbacks: { label: function(ctx) { return ` ¥${ctx.parsed.y.toLocaleString()}`; } } } }
             }
         });
     }
