@@ -3858,46 +3858,6 @@
       }
 
       function triggerGoalCelebration() {
-        const overlay = document.getElementById("celebrationOverlay");
-        overlay.classList.add("active");
-        setTimeout(() => overlay.classList.remove("active"), 4000);
-
-        if (typeof confetti === "function") {
-          const colors = [
-            "#ffd700",
-            "#ff6b6b",
-            "#4ecdc4",
-            "#45b7d1",
-            "#96ceb4",
-            "#ffeaa7",
-            "#fd79a8",
-          ];
-          const duration = 3500;
-          const end = Date.now() + duration;
-          confetti({
-            particleCount: 120,
-            spread: 80,
-            origin: { y: 0.55 },
-            colors,
-          });
-          (function burst() {
-            confetti({
-              particleCount: 4,
-              angle: 60,
-              spread: 60,
-              origin: { x: 0, y: 0.65 },
-              colors,
-            });
-            confetti({
-              particleCount: 4,
-              angle: 120,
-              spread: 60,
-              origin: { x: 1, y: 0.65 },
-              colors,
-            });
-            if (Date.now() < end) requestAnimationFrame(burst);
-          })();
-        }
       }
 
       function checkGoalAchievement(monthKey, total, goal) {
