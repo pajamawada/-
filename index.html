@@ -57,13 +57,18 @@
       #averageView,
       #safeView,
       #myPageView {
-        flex: 1;
+        flex: 1 1 auto;
         min-height: 0;
         width: 100%;
+        display: flex;
+        flex-direction: column;
       }
       #calendar {
-        height: 100%;
+        flex: 1 1 auto;
+        min-height: 0;
         width: 100%;
+        display: flex;
+        flex-direction: column;
       }
 
       /* ================= ヘッダー部分 ================= */
@@ -190,23 +195,26 @@
         position: relative;
       }
       .btn-filter {
-        background: #fff;
-        border: 1px solid #cbd5e0;
-        padding: 0 12px;
-        height: 40px;
+        background: #ffffff;
+        border: 1px solid #e2e8f0;
+        padding: 0 14px;
+        height: 38px;
         box-sizing: border-box;
-        border-radius: 8px;
+        border-radius: 99px;
         cursor: pointer;
-        font-weight: bold;
+        font-weight: 600;
         color: #4a5568;
         display: flex;
         align-items: center;
+        justify-content: center;
         gap: 6px;
-        font-size: 14px;
+        font-size: 13px;
         white-space: nowrap;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       }
       .btn-filter:hover {
-        background: #edf2f7;
+        background: #f7fafc;
+        border-color: #cbd5e0;
       }
       .filter-menu-popup {
         display: none;
@@ -266,6 +274,30 @@
 
       .fc {
         color: #2d3748 !important;
+      }
+      .fc .fc-button-primary {
+        background-color: #fff !important;
+        color: #4a5568 !important;
+        border: 1px solid #cbd5e0 !important;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        border-radius: 99px !important;
+        text-transform: capitalize !important;
+        font-weight: 600 !important;
+      }
+      .fc .fc-button-primary:hover {
+        background-color: #f7fafc !important;
+        border-color: #a0aec0 !important;
+        color: #2d3748 !important;
+      }
+      .fc .fc-button-primary:active,
+      .fc .fc-button-primary.fc-button-active {
+        background-color: #edf2f7 !important;
+        border-color: #718096 !important;
+        color: #1a202c !important;
+        box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+      }
+      .fc .fc-button-primary:focus {
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.2) !important;
       }
       .fc a {
         color: #2d3748 !important;
@@ -343,7 +375,7 @@
         height: 100%;
         background: #2d3748;
         color: #fff;
-        z-index: 1000;
+        z-index: 2001;
         transform: translateX(-100%);
         transition: transform 0.3s ease;
         padding: 25px 12px 25px 25px;
@@ -363,7 +395,7 @@
         width: 100%;
         height: 100%;
         background: rgba(0, 0, 0, 0.4);
-        z-index: 999;
+        z-index: 2000;
       }
       .sidebar-overlay.open {
         display: block;
@@ -412,6 +444,12 @@
         border-radius: 8px;
         font-weight: bold;
         transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .menu-item-btn svg {
+        flex-shrink: 0;
       }
       .menu-item-btn:hover {
         background: #4a5568;
@@ -756,6 +794,15 @@
         }
       }
       @media (max-width: 768px) {
+        #averageCardsContainer:has(.unit-day),
+        #averageCardsContainer:has(.unit-week) {
+          overflow-y: auto !important;
+          display: block !important;
+        }
+        .average-cards-grid.unit-day,
+        .average-cards-grid.unit-week {
+          height: auto !important;
+        }
         .average-cards-grid.unit-day {
           grid-template-columns: repeat(2, minmax(0, 1fr));
         }
@@ -957,16 +1004,44 @@
         padding: 16px;
       }
       @media (max-width: 760px) {
-        .mypage-chart-header,
-        .mypage-chart-actions {
-          align-items: flex-start;
+        .mypage-chart-header {
+          position: relative;
+          display: flex;
           flex-direction: column;
+          align-items: stretch;
+        }
+        .mypage-chart-header > div:first-child {
+          padding-right: 85px;
+          margin-bottom: 12px;
+        }
+        .mypage-chart-actions {
+          width: 100%;
+          display: flex;
+          flex-direction: row;
+          flex-wrap: nowrap;
+          align-items: stretch;
+          gap: 6px;
+        }
+        .mypage-chart-actions .filter-container {
+          position: absolute;
+          top: -4px;
+          right: 0;
         }
         .mypage-ratio-body {
           grid-template-columns: 1fr;
         }
         .mypage-chart-total {
-          width: 100%;
+          flex: 1;
+          width: auto;
+          min-width: 0;
+          padding: 0 6px;
+          font-size: 13px;
+        }
+        .mypage-chart-actions .btn-blue {
+          flex: 1;
+          min-width: 0;
+          justify-content: center;
+          padding: 0 8px !important;
         }
       }
 
@@ -1023,6 +1098,20 @@
       }
       body.dark-mode .fc {
         color: #edf2f7 !important;
+      }
+      body.dark-mode .fc .fc-button-primary {
+        background-color: #4a5568 !important;
+        color: #edf2f7 !important;
+        border-color: #718096 !important;
+      }
+      body.dark-mode .fc .fc-button-primary:hover {
+        background-color: #2d3748 !important;
+        border-color: #a0aec0 !important;
+      }
+      body.dark-mode .fc .fc-button-primary:active,
+      body.dark-mode .fc .fc-button-primary.fc-button-active {
+        background-color: #1a202c !important;
+        border-color: #cbd5e0 !important;
       }
       body.dark-mode .fc a {
         color: #edf2f7 !important;
@@ -1403,20 +1492,27 @@
         }
       }
 
+      @media (min-width: 769px) {
+        #trendsAverageDisplayMobile {
+          display: none !important;
+        }
+      }
       /* ================= スマホ向けレスポンシブ ================= */
       @media (max-width: 768px) {
         body {
           padding: 8px;
-          height: auto;
-          min-height: 100vh;
-          min-height: 100dvh;
+          padding-bottom: 78px !important;
+          height: 100vh;
+          height: 100dvh;
+          overflow: hidden;
         }
         .container {
           padding: 10px 12px;
           border-radius: 10px;
-          height: auto;
-          min-height: calc(100vh - 16px);
-          min-height: calc(100dvh - 16px);
+          height: 100%;
+          min-height: 0;
+          display: flex;
+          flex-direction: column;
         }
         #calendarView,
         #trendsView,
@@ -1427,72 +1523,145 @@
           flex: 1 1 auto;
         }
         #calendarView {
-          min-height: 52vh;
-          min-height: 52dvh;
+          min-height: 0;
         }
         #calendar {
-          min-height: 380px;
+          min-height: 0;
+          flex: 1 1 auto;
         }
         #myPageView {
-          flex: none;
-          overflow-y: visible;
+          flex: 1 1 auto;
+          min-height: 0;
+          overflow-y: auto;
+          -webkit-overflow-scrolling: touch;
         }
 
         /* ヘッダー */
         .header-wrapper {
-          margin-bottom: 8px;
-          padding-bottom: 8px;
+          margin-bottom: 6px;
+          padding-bottom: 6px;
         }
         .header-top {
-          flex-direction: column;
-          align-items: stretch;
-          gap: 10px;
-          margin-bottom: 8px;
+          flex-direction: row;
+          flex-wrap: wrap;
+          align-items: center;
+          justify-content: space-between;
+          gap: 6px;
+          margin-bottom: 4px;
         }
         .left-header {
-          gap: 10px;
+          display: flex;
+          align-items: center;
+          gap: 6px;
           min-width: 0;
+          flex: 1 1 auto;
         }
         .title {
-          font-size: 17px;
+          font-size: 16px;
           height: auto;
           line-height: 1.3;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .menu-btn {
-          font-size: 24px;
-          padding: 4px 8px;
+          font-size: 20px;
+          padding: 2px 6px;
           flex-shrink: 0;
         }
         .right-header {
+          display: flex;
           flex-wrap: wrap;
-          gap: 8px;
+          gap: 4px;
           width: 100%;
-          justify-content: flex-start;
+          justify-content: space-between;
+          align-items: center;
+          margin-top: 2px;
         }
         .right-header > .monthly-total-container,
         .right-header > .monthly-total,
         .right-header > #safeTotalContainer {
+          flex: 1 1 auto;
+          min-width: 0;
+          order: 1;
+          align-items: flex-start;
+        }
+        .right-header .monthly-total {
+          justify-content: flex-start;
+        }
+        .right-header .filter-container,
+        .right-header > .btn-filter {
+          order: 2;
+          flex: 0 1 auto;
+        }
+        /* ボタン類をコンパクトに */
+        .right-header .btn-filter {
+          padding: 0 6px;
+          font-size: 11px;
+        }
+        .right-header .filter-container {
+           flex: 0 1 auto;
+        }
+        body.is-trends-view .right-header {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 4px;
+        }
+        body.is-trends-view #trendsUnitContainer,
+        body.is-trends-view #darkModeBtn,
+        body.is-trends-view #trendsFilterContainer,
+        body.is-trends-view #trendsAverageDisplayMobile {
+          flex: 1 1 0;
+          min-width: 0;
+          order: 1;
+        }
+        body.is-trends-view #trendsUnitContainer .btn-filter,
+        body.is-trends-view #darkModeBtn,
+        body.is-trends-view #trendsFilterContainer .btn-filter,
+        body.is-trends-view #trendsAverageDisplayMobile {
+          width: 100%;
+          padding: 0 2px;
+          font-size: 10.5px;
+          height: 32px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          white-space: nowrap;
+          box-sizing: border-box;
+        }
+        body.is-trends-view #trendsUnitContainer .btn-filter svg,
+        body.is-trends-view #darkModeBtn svg,
+        body.is-trends-view #trendsFilterContainer .btn-filter svg {
+          width: 12px;
+          height: 12px;
+          margin-right: 2px;
+        }
+        body.is-trends-view #trendsTotalDisplay {
           flex: 1 1 100%;
-          min-width: 100%;
+          order: 2;
+          margin-top: 4px;
+        }
+        body.is-trends-view #headerBottomLeft {
+          display: none !important;
         }
         .monthly-total-container {
           min-width: 0;
-          align-items: stretch;
+          align-items: center;
         }
         .monthly-total {
-          font-size: 14px;
-          height: 36px;
-          padding: 0 12px;
+          font-size: 13px;
+          height: 32px;
+          padding: 0 8px;
         }
         .btn-filter {
-          height: 36px;
-          padding: 0 10px;
-          font-size: 13px;
+          height: 32px;
+          padding: 0 8px;
+          font-size: 12px;
         }
         .header-bottom {
           flex-direction: column;
           align-items: stretch;
-          gap: 10px;
+          gap: 6px;
         }
         #headerBottomLeft,
         #headerBottomRight {
@@ -1500,7 +1669,7 @@
         }
         #headerBottomRight {
           flex-wrap: wrap;
-          gap: 8px;
+          gap: 6px;
         }
         #trendsDateControls,
         #ratioDateControls {
@@ -1586,23 +1755,37 @@
 
         /* FullCalendar */
         .fc-header-toolbar {
-          grid-template-columns: 1fr !important;
-          grid-template-rows: auto auto auto;
-          gap: 8px !important;
-          margin-bottom: 8px !important;
+          display: flex !important;
+          flex-direction: row !important;
+          justify-content: space-between !important;
+          align-items: flex-start !important;
+          gap: 4px !important;
+          margin-bottom: 12px !important;
+        }
+        .fc-header-toolbar .fc-toolbar-chunk {
+          width: auto !important;
+          display: flex !important;
+          align-items: center !important;
         }
         .fc-header-toolbar .fc-toolbar-chunk:nth-child(1) {
-          justify-self: center;
-          order: 1;
+          order: 2 !important;
+          justify-content: flex-end !important;
+          flex-wrap: nowrap !important;
         }
         .fc-header-toolbar .fc-toolbar-chunk:nth-child(2) {
-          justify-self: center;
-          order: 2;
-          width: 100%;
+          order: 1 !important;
+          flex: 1 1 auto !important;
+          justify-content: flex-start !important;
+          min-width: 0;
         }
         .fc-header-toolbar .fc-toolbar-chunk:nth-child(3) {
-          justify-self: center;
-          order: 3;
+          display: none !important;
+        }
+        .fc-toolbar-title-wrap {
+          width: 100% !important;
+          display: flex !important;
+          flex-direction: column !important;
+          align-items: flex-start !important;
         }
         .fc-title-progress {
           position: static !important;
@@ -1610,12 +1793,26 @@
           width: 100% !important;
           margin-top: 6px;
         }
+        .fc-title-progress .progress-wrapper {
+          flex-wrap: wrap;
+          gap: 2px !important;
+        }
+        .fc-title-progress .header-progress-text {
+          font-size: 11px;
+        }
+        .fc-title-progress .header-progress-bar {
+          height: 16px !important;
+          min-height: 16px !important;
+        }
+        #calendarHeaderProgressText {
+          font-size: 10px !important;
+        }
         .fc-toolbar-title {
-          font-size: 1.05em !important;
+          font-size: 1em !important;
         }
         .fc .fc-button {
-          padding: 0.35em 0.55em;
-          font-size: 0.85em;
+          padding: 0.3em 0.4em;
+          font-size: 0.8em;
         }
         .fc-col-header-cell-cushion {
           font-size: 11px;
@@ -1827,12 +2024,13 @@
       @media (max-width: 480px) {
         body {
           padding: 4px;
+          padding-bottom: 74px !important;
         }
         .container {
           padding: 8px 10px;
           border-radius: 8px;
-          min-height: calc(100vh - 8px);
-          min-height: calc(100dvh - 8px);
+          height: 100%;
+          min-height: 0;
         }
         .title {
           font-size: 15px;
@@ -2054,6 +2252,64 @@
           filter: blur(0px);
         }
       }
+      /* ================= ボトムナビゲーション ================= */
+      .bottom-nav {
+        display: none;
+      }
+      @media (max-width: 768px) {
+        .bottom-nav {
+          display: flex;
+          position: fixed;
+          bottom: 0;
+          left: 0;
+          width: 100%;
+          background: #ffffff;
+          box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+          z-index: 1000;
+          justify-content: space-around;
+          padding-bottom: env(safe-area-inset-bottom);
+          border-top: 1px solid #edf2f7;
+          transition: background-color 0.3s, border-color 0.3s;
+        }
+        body.dark-mode .bottom-nav {
+          background: #2d3748;
+          border-top: 1px solid #4a5568;
+          box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
+        }
+        .bottom-nav-item {
+          background: none;
+          border: none;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 8px 0;
+          flex: 1;
+          cursor: pointer;
+          color: #a0aec0;
+          transition: color 0.2s;
+        }
+        body.dark-mode .bottom-nav-item {
+          color: #718096;
+        }
+        .bottom-nav-item.active {
+          color: #3182ce;
+        }
+        body.dark-mode .bottom-nav-item.active {
+          color: #63b3ed;
+        }
+        .bottom-nav-item .nav-icon {
+          font-size: 20px;
+          margin-bottom: 2px;
+        }
+        .bottom-nav-item .label {
+          font-size: 10px;
+          font-weight: bold;
+        }
+        body {
+          padding-bottom: 70px !important;
+        }
+      }
       #calendarView,
       #trendsView,
       #ratioView,
@@ -2077,62 +2333,73 @@
       <ul class="menu-list">
         <li>
           <button class="menu-item-btn" onclick="showCalendarView()">
-            🏠 カレンダー画面
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+            カレンダー画面
           </button>
         </li>
         <li class="menu-divider"></li>
         <li>
           <button class="menu-item-btn" onclick="openWorkModal('projects')">
-            📂 グループ・項目の登録
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>
+            グループ・項目の登録
           </button>
         </li>
         <li>
           <button class="menu-item-btn" onclick="openWorkModal('goals')">
-            🎯 目標金額の設定
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>
+            目標金額の設定
           </button>
         </li>
         <li class="menu-divider"></li>
         <li>
           <button class="menu-item-btn" onclick="openWorkModal('monthly')">
-            📅 項目ごとの一括入力
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg>
+            項目ごとの一括入力
           </button>
         </li>
         <li>
           <button class="menu-item-btn" onclick="openWorkModal('daily')">
-            ⚡ 各日の一括入力
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            各日の一括入力
           </button>
         </li>
         <li class="menu-divider"></li>
         <li>
           <button class="menu-item-btn" onclick="showTrendsView()">
-            📈 収益推移
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+            収益推移
           </button>
         </li>
         <li>
           <button class="menu-item-btn" onclick="showRatioView()">
-            📊 収益割合
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+            収益割合
           </button>
         </li>
         <li>
           <button class="menu-item-btn" onclick="showAverageView()">
-            📉 収益平均
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
+            収益平均
           </button>
         </li>
         <li class="menu-divider"></li>
         <li>
           <button class="menu-item-btn" onclick="showSafeView()">
-            🏦 金庫
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="20" width="16" height="2"></rect><path d="M12 2 2 8h20L12 2Z"></path><rect x="6" y="10" width="2" height="8"></rect><rect x="16" y="10" width="2" height="8"></rect><rect x="11" y="10" width="2" height="8"></rect></svg>
+            金庫
           </button>
         </li>
         <li>
           <button class="menu-item-btn" onclick="openBackupModal()">
-            💾 データのバックアップ
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            データのバックアップ
           </button>
         </li>
         <li class="menu-divider"></li>
         <li>
           <button class="menu-item-btn" onclick="showMyPageView()">
-            👤 マイページ
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+            マイページ
           </button>
         </li>
       </ul>
@@ -2639,7 +2906,8 @@
               style="display: none"
             >
               <button class="btn-filter" onclick="toggleTrendsUnitMenu(event)">
-                📏 単位切替
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"></path><path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"></path><path d="M4 12h16"></path></svg>
+                単位切替
               </button>
               <div
                 id="trendsUnitMenu"
@@ -2692,7 +2960,8 @@
               style="display: none"
             >
               <button class="btn-filter" onclick="toggleAverageUnitMenu(event)">
-                📏 単位切替
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v3"></path><path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"></path><path d="M4 12h16"></path></svg>
+                単位切替
               </button>
               <div
                 id="averageUnitMenu"
@@ -2730,13 +2999,15 @@
               </div>
             </div>
 
-            <button class="btn-filter" onclick="toggleDarkMode()">
-              🌓 表示切替
+            <button class="btn-filter" id="darkModeBtn" onclick="toggleDarkMode()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></svg>
+              表示切替
             </button>
 
             <div class="filter-container" id="calendarFilterContainer">
               <button class="btn-filter" onclick="toggleFilterMenu(event)">
-                👁️ 項目切替
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                項目切替
               </button>
               <div id="filterMenu" class="filter-menu-popup">
                 <div id="filterMenuContent"></div>
@@ -2752,7 +3023,8 @@
                 class="btn-filter"
                 onclick="toggleTrendsFilterMenu(event)"
               >
-                👁️ 項目切替
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                項目切替
               </button>
               <div id="trendsFilterMenu" class="filter-menu-popup">
                 <div id="trendsFilterMenuContent"></div>
@@ -2765,7 +3037,8 @@
               style="display: none"
             >
               <button class="btn-filter" onclick="toggleRatioFilterMenu(event)">
-                👁️ 項目切替
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                項目切替
               </button>
               <div id="ratioRatioMenu" class="filter-menu-popup">
                 <div id="ratioFilterMenuContent"></div>
@@ -2781,7 +3054,8 @@
                 class="btn-filter"
                 onclick="toggleAverageFilterMenu(event)"
               >
-                👁️ 項目切替
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
+                項目切替
               </button>
               <div id="averageFilterMenu" class="filter-menu-popup">
                 <div id="averageFilterMenuContent"></div>
@@ -2794,8 +3068,13 @@
               style="display: none"
               onclick="openSafeModal()"
             >
-              ➕ 番号登録
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+              番号登録
             </button>
+
+            <div class="monthly-total" id="trendsAverageDisplayMobile" style="display: none; justify-content: center; margin: 0;">
+              日平均: ¥0
+            </div>
 
             <div class="monthly-total-container" id="monthlyTotalContainer">
               <div class="monthly-total" id="monthlyTotalDisplay">
@@ -2999,6 +3278,7 @@
                     class="btn-filter"
                     onclick="toggleMyPageTodayFilterMenu(event)"
                   >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                     項目切替
                   </button>
                   <div id="myPageTodayFilterMenu" class="filter-menu-popup">
@@ -3049,6 +3329,7 @@
                     class="btn-filter"
                     onclick="toggleMyPageRatioFilterMenu(event)"
                   >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                     項目切替
                   </button>
                   <div id="myPageRatioFilterMenu" class="filter-menu-popup">
@@ -3089,6 +3370,7 @@
                     class="btn-filter"
                     onclick="toggleMyPageTrendsFilterMenu(event)"
                   >
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon></svg>
                     項目切替
                   </button>
                   <div id="myPageTrendsFilterMenu" class="filter-menu-popup">
@@ -3152,6 +3434,34 @@
         </div>
       </div>
     </div>
+
+    <!-- ボトムナビゲーション (スマホ用) -->
+    <nav class="bottom-nav">
+      <button class="bottom-nav-item active" data-view="calendar" onclick="showCalendarView()">
+        <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg></span>
+        <span class="label">ホーム</span>
+      </button>
+      <button class="bottom-nav-item" data-view="trends" onclick="showTrendsView()">
+        <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg></span>
+        <span class="label">推移</span>
+      </button>
+      <button class="bottom-nav-item" data-view="ratio" onclick="showRatioView()">
+        <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg></span>
+        <span class="label">割合</span>
+      </button>
+      <button class="bottom-nav-item" data-view="average" onclick="showAverageView()">
+        <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg></span>
+        <span class="label">平均</span>
+      </button>
+      <button class="bottom-nav-item" data-view="safe" onclick="showSafeView()">
+        <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="20" width="16" height="2"></rect><path d="M12 2 2 8h20L12 2Z"></path><rect x="6" y="10" width="2" height="8"></rect><rect x="16" y="10" width="2" height="8"></rect><rect x="11" y="10" width="2" height="8"></rect></svg></span>
+        <span class="label">金庫</span>
+      </button>
+      <button class="bottom-nav-item" data-view="mypage" onclick="showMyPageView()">
+        <span class="nav-icon"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></span>
+        <span class="label">マイページ</span>
+      </button>
+    </nav>
 
     <script>
       Chart.register(ChartDataLabels);
@@ -3818,10 +4128,21 @@
         renderTrendsChart();
       }
 
+      function updateBottomNavActive(viewId) {
+        const items = document.querySelectorAll('.bottom-nav-item');
+        items.forEach(item => item.classList.remove('active'));
+        const activeItem = document.querySelector(`.bottom-nav-item[data-view="${viewId}"]`);
+        if (activeItem) {
+          activeItem.classList.add('active');
+        }
+      }
+
       function showCalendarView() {
+        document.body.classList.remove('is-trends-view');
+        updateBottomNavActive('calendar');
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
-        document.getElementById("calendarView").style.display = "block";
+        document.getElementById("calendarView").style.display = "flex";
         document.getElementById("trendsView").style.display = "none";
         document.getElementById("ratioView").style.display = "none";
         document.getElementById("averageView").style.display = "none";
@@ -3832,6 +4153,8 @@
         document.getElementById("trendsTotalDisplay").style.display = "none";
         const avg = document.getElementById("trendsAverageDisplay");
         if (avg) avg.style.display = "none";
+        const avgMobile = document.getElementById("trendsAverageDisplayMobile");
+        if (avgMobile) avgMobile.style.display = "none";
         document.getElementById("ratioTotalDisplay").style.display = "none";
         document.getElementById("safeTotalContainer").style.display = "none";
 
@@ -3856,6 +4179,8 @@
       }
 
       function showTrendsView() {
+        document.body.classList.add('is-trends-view');
+        updateBottomNavActive('trends');
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
         document.getElementById("calendarView").style.display = "none";
@@ -3868,6 +4193,8 @@
         document.getElementById("monthlyTotalContainer").style.display = "none";
         document.getElementById("trendsTotalDisplay").style.display = "flex";
         document.getElementById("trendsAverageDisplay").style.display = "flex";
+        const avgMobile = document.getElementById("trendsAverageDisplayMobile");
+        if (avgMobile) avgMobile.style.display = "flex";
         document.getElementById("ratioTotalDisplay").style.display = "none";
         document.getElementById("safeTotalContainer").style.display = "none";
 
@@ -3892,6 +4219,8 @@
       }
 
       function showRatioView() {
+        document.body.classList.remove('is-trends-view');
+        updateBottomNavActive('ratio');
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
         document.getElementById("calendarView").style.display = "none";
@@ -3905,6 +4234,8 @@
         document.getElementById("trendsTotalDisplay").style.display = "none";
         const avg = document.getElementById("trendsAverageDisplay");
         if (avg) avg.style.display = "none";
+        const avgMobile = document.getElementById("trendsAverageDisplayMobile");
+        if (avgMobile) avgMobile.style.display = "none";
         document.getElementById("ratioTotalDisplay").style.display = "flex";
         document.getElementById("safeTotalContainer").style.display = "none";
 
@@ -3926,6 +4257,8 @@
       }
 
       function showAverageView() {
+        document.body.classList.remove('is-trends-view');
+        updateBottomNavActive('average');
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
         document.getElementById("calendarView").style.display = "none";
@@ -3939,6 +4272,8 @@
         document.getElementById("trendsTotalDisplay").style.display = "none";
         const avgEl = document.getElementById("trendsAverageDisplay");
         if (avgEl) avgEl.style.display = "none";
+        const avgMobileEl = document.getElementById("trendsAverageDisplayMobile");
+        if (avgMobileEl) avgMobileEl.style.display = "none";
         document.getElementById("ratioTotalDisplay").style.display = "none";
         document.getElementById("safeTotalContainer").style.display = "none";
 
@@ -3968,6 +4303,8 @@
 
       /* --- 金庫画面の表示 --- */
       function showSafeView() {
+        document.body.classList.remove('is-trends-view');
+        updateBottomNavActive('safe');
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
         document.getElementById("calendarView").style.display = "none";
@@ -3981,6 +4318,8 @@
         document.getElementById("trendsTotalDisplay").style.display = "none";
         const avg = document.getElementById("trendsAverageDisplay");
         if (avg) avg.style.display = "none";
+        const avgMobile = document.getElementById("trendsAverageDisplayMobile");
+        if (avgMobile) avgMobile.style.display = "none";
         document.getElementById("ratioTotalDisplay").style.display = "none";
         document.getElementById("safeTotalContainer").style.display = "flex";
 
@@ -4003,6 +4342,8 @@
 
       /* --- マイページの表示 --- */
       function showMyPageView() {
+        document.body.classList.remove('is-trends-view');
+        updateBottomNavActive('mypage');
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
         document.getElementById("calendarView").style.display = "none";
@@ -4016,6 +4357,8 @@
         document.getElementById("trendsTotalDisplay").style.display = "none";
         const avg = document.getElementById("trendsAverageDisplay");
         if (avg) avg.style.display = "none";
+        const avgMobile = document.getElementById("trendsAverageDisplayMobile");
+        if (avgMobile) avgMobile.style.display = "none";
         document.getElementById("ratioTotalDisplay").style.display = "none";
         document.getElementById("safeTotalContainer").style.display = "none";
 
@@ -4123,13 +4466,13 @@
           "#d69e2e",
         ];
         const hoverColors = [
-          "#2b75b8",
-          "#2b8785",
-          "#c9611c",
-          "#7351bf",
-          "#cc3737",
-          "#32915e",
-          "#c28f29",
+          "#1a71c9",
+          "#1a9e9a",
+          "#ea5d0b",
+          "#7740df",
+          "#f02424",
+          "#20b263",
+          "#e8a113",
         ];
 
         const tableContainer = document.getElementById(
@@ -5643,12 +5986,12 @@
                     "#38a169",
                   ],
                   hoverBackgroundColor: [
-                    "#2b75b8",
-                    "#2b8785",
-                    "#c9611c",
-                    "#7351bf",
-                    "#cc3737",
-                    "#32915e",
+                    "#1a71c9",
+                    "#1a9e9a",
+                    "#ea5d0b",
+                    "#7740df",
+                    "#f02424",
+                    "#20b263",
                   ],
                   borderWidth: 1,
                   borderColor: isDark ? "#2d3748" : "#ffffff",
@@ -5917,6 +6260,9 @@
         const avgEl = document.getElementById("trendsAverageDisplay");
         if (avgEl)
           avgEl.textContent = `${unitText}平均: ¥${avgAmount.toLocaleString()}`;
+        const avgMobileEl = document.getElementById("trendsAverageDisplayMobile");
+        if (avgMobileEl)
+          avgMobileEl.textContent = `${unitText}平均: ¥${avgAmount.toLocaleString()}`;
 
         const isDark = document.body.classList.contains("dark-mode");
         monthlyLineChartInstance = new Chart(canvas.getContext("2d"), {
@@ -6029,13 +6375,13 @@
           "#d69e2e",
         ];
         const hoverColors = [
-          "#2b75b8",
-          "#2b8785",
-          "#c9611c",
-          "#7351bf",
-          "#cc3737",
-          "#32915e",
-          "#c28f29",
+          "#1a71c9",
+          "#1a9e9a",
+          "#ea5d0b",
+          "#7740df",
+          "#f02424",
+          "#20b263",
+          "#e8a113",
         ];
 
         const tableContainer = document.getElementById("ratioTableContainer");
@@ -6337,13 +6683,13 @@
           "#d69e2e",
         ];
         const hoverColors = [
-          "#2b75b8",
-          "#2b8785",
-          "#c9611c",
-          "#7351bf",
-          "#cc3737",
-          "#32915e",
-          "#c28f29",
+          "#1a71c9",
+          "#1a9e9a",
+          "#ea5d0b",
+          "#7740df",
+          "#f02424",
+          "#20b263",
+          "#e8a113",
         ];
         const isDark = document.body.classList.contains("dark-mode");
         const subColor = isDark ? "#a0aec0" : "#718096";
@@ -6515,13 +6861,13 @@
           "#d69e2e",
         ];
         const hoverColors = [
-          "#2b75b8",
-          "#2b8785",
-          "#c9611c",
-          "#7351bf",
-          "#cc3737",
-          "#32915e",
-          "#c28f29",
+          "#1a71c9",
+          "#1a9e9a",
+          "#ea5d0b",
+          "#7740df",
+          "#f02424",
+          "#20b263",
+          "#e8a113",
         ];
 
         if (filteredList.length === 0) {
