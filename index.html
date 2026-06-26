@@ -1609,11 +1609,15 @@
         }
         body.is-trends-view #trendsUnitContainer,
         body.is-trends-view #darkModeBtn,
-        body.is-trends-view #trendsFilterContainer,
-        body.is-trends-view #trendsAverageDisplayMobile {
+        body.is-trends-view #trendsFilterContainer {
           flex: 1 1 0;
           min-width: 0;
           order: 1;
+        }
+        body.is-trends-view #trendsAverageDisplayMobile {
+          flex: 1 1 0;
+          min-width: 0;
+          order: 0;
         }
         body.is-trends-view #trendsUnitContainer .btn-filter,
         body.is-trends-view #darkModeBtn,
@@ -1642,6 +1646,51 @@
           margin-top: 4px;
         }
         body.is-trends-view #headerBottomLeft {
+          display: none !important;
+        }
+
+        body.is-average-view .right-header {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0;
+          justify-content: flex-start;
+        }
+        body.is-average-view #averageUnitContainer,
+        body.is-average-view #darkModeBtn,
+        body.is-average-view #averageFilterContainer {
+          flex: 0 1 auto;
+          order: 1;
+        }
+        body.is-average-view #averageUnitContainer .btn-filter,
+        body.is-average-view #darkModeBtn,
+        body.is-average-view #averageFilterContainer .btn-filter {
+          width: auto;
+          padding: 0 10px;
+          font-size: 11px;
+          height: 32px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          white-space: nowrap;
+          box-sizing: border-box;
+          border-radius: 0;
+          border-right-width: 0;
+        }
+        body.is-average-view #averageUnitContainer .btn-filter {
+          border-radius: 99px 0 0 99px;
+        }
+        body.is-average-view #averageFilterContainer .btn-filter {
+          border-radius: 0 99px 99px 0;
+          border-right-width: 1px;
+        }
+        body.is-average-view #averageUnitContainer .btn-filter svg,
+        body.is-average-view #darkModeBtn svg,
+        body.is-average-view #averageFilterContainer .btn-filter svg {
+          width: 12px;
+          height: 12px;
+          margin-right: 2px;
+        }
+        body.is-average-view #headerBottomLeft {
           display: none !important;
         }
         .monthly-total-container {
@@ -3090,11 +3139,13 @@
               合計: ¥0
             </div>
             <div
-              class="monthly-total"
-              id="ratioTotalDisplay"
+              class="monthly-total-container"
+              id="ratioTotalContainer"
               style="display: none"
             >
-              合計: ¥0
+              <div class="monthly-total" id="ratioTotalDisplay">
+                合計: ¥0
+              </div>
             </div>
             <div
               class="monthly-total-container"
@@ -4138,7 +4189,7 @@
       }
 
       function showCalendarView() {
-        document.body.classList.remove('is-trends-view');
+        document.body.classList.remove('is-trends-view', 'is-average-view');
         updateBottomNavActive('calendar');
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
@@ -4155,7 +4206,7 @@
         if (avg) avg.style.display = "none";
         const avgMobile = document.getElementById("trendsAverageDisplayMobile");
         if (avgMobile) avgMobile.style.display = "none";
-        document.getElementById("ratioTotalDisplay").style.display = "none";
+        document.getElementById("ratioTotalContainer").style.display = "none";
         document.getElementById("safeTotalContainer").style.display = "none";
 
         document.getElementById("trendsDateControls").style.display = "none";
@@ -4179,6 +4230,7 @@
       }
 
       function showTrendsView() {
+        document.body.classList.remove('is-average-view');
         document.body.classList.add('is-trends-view');
         updateBottomNavActive('trends');
         if (document.getElementById("sidebar").classList.contains("open"))
@@ -4195,7 +4247,7 @@
         document.getElementById("trendsAverageDisplay").style.display = "flex";
         const avgMobile = document.getElementById("trendsAverageDisplayMobile");
         if (avgMobile) avgMobile.style.display = "flex";
-        document.getElementById("ratioTotalDisplay").style.display = "none";
+        document.getElementById("ratioTotalContainer").style.display = "none";
         document.getElementById("safeTotalContainer").style.display = "none";
 
         document.getElementById("trendsDateControls").style.display = "flex";
@@ -4219,7 +4271,7 @@
       }
 
       function showRatioView() {
-        document.body.classList.remove('is-trends-view');
+        document.body.classList.remove('is-trends-view', 'is-average-view');
         updateBottomNavActive('ratio');
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
@@ -4236,7 +4288,7 @@
         if (avg) avg.style.display = "none";
         const avgMobile = document.getElementById("trendsAverageDisplayMobile");
         if (avgMobile) avgMobile.style.display = "none";
-        document.getElementById("ratioTotalDisplay").style.display = "flex";
+        document.getElementById("ratioTotalContainer").style.display = "flex";
         document.getElementById("safeTotalContainer").style.display = "none";
 
         document.getElementById("trendsDateControls").style.display = "none";
@@ -4258,6 +4310,7 @@
 
       function showAverageView() {
         document.body.classList.remove('is-trends-view');
+        document.body.classList.add('is-average-view');
         updateBottomNavActive('average');
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
@@ -4274,7 +4327,7 @@
         if (avgEl) avgEl.style.display = "none";
         const avgMobileEl = document.getElementById("trendsAverageDisplayMobile");
         if (avgMobileEl) avgMobileEl.style.display = "none";
-        document.getElementById("ratioTotalDisplay").style.display = "none";
+        document.getElementById("ratioTotalContainer").style.display = "none";
         document.getElementById("safeTotalContainer").style.display = "none";
 
         document.getElementById("trendsDateControls").style.display = "none";
@@ -4303,7 +4356,7 @@
 
       /* --- 金庫画面の表示 --- */
       function showSafeView() {
-        document.body.classList.remove('is-trends-view');
+        document.body.classList.remove('is-trends-view', 'is-average-view');
         updateBottomNavActive('safe');
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
@@ -4320,7 +4373,7 @@
         if (avg) avg.style.display = "none";
         const avgMobile = document.getElementById("trendsAverageDisplayMobile");
         if (avgMobile) avgMobile.style.display = "none";
-        document.getElementById("ratioTotalDisplay").style.display = "none";
+        document.getElementById("ratioTotalContainer").style.display = "none";
         document.getElementById("safeTotalContainer").style.display = "flex";
 
         document.getElementById("trendsDateControls").style.display = "none";
@@ -4342,7 +4395,7 @@
 
       /* --- マイページの表示 --- */
       function showMyPageView() {
-        document.body.classList.remove('is-trends-view');
+        document.body.classList.remove('is-trends-view', 'is-average-view');
         updateBottomNavActive('mypage');
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
@@ -4359,7 +4412,7 @@
         if (avg) avg.style.display = "none";
         const avgMobile = document.getElementById("trendsAverageDisplayMobile");
         if (avgMobile) avgMobile.style.display = "none";
-        document.getElementById("ratioTotalDisplay").style.display = "none";
+        document.getElementById("ratioTotalContainer").style.display = "none";
         document.getElementById("safeTotalContainer").style.display = "none";
 
         document.getElementById("trendsDateControls").style.display = "none";
