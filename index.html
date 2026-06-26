@@ -1883,6 +1883,186 @@
           font-size: 14px;
         }
       }
+      /* ================= 圧倒的で洗練されたアニメーション・トランジション ================= */
+      .btn-blue,
+      .btn-red,
+      .btn-filter,
+      .btn-settings,
+      .btn-green,
+      .btn-outline,
+      .menu-btn,
+      .close-btn,
+      .toggle-eye-btn {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .btn-blue:active,
+      .btn-red:active,
+      .btn-filter:active,
+      .btn-settings:active,
+      .btn-green:active,
+      .btn-outline:active,
+      .menu-btn:active,
+      .close-btn:active,
+      .toggle-eye-btn:active {
+        transform: scale(0.92) translateY(2px) !important;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+      }
+
+      @keyframes modalFadeInBounce {
+        0% {
+          opacity: 0;
+          transform: scale(0.85) translateY(40px) perspective(1000px)
+            rotateX(-10deg);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) translateY(0) perspective(1000px) rotateX(0deg);
+        }
+      }
+      .work-modal-content {
+        animation: modalFadeInBounce 0.6s cubic-bezier(0.34, 1.56, 0.64, 1)
+          forwards;
+      }
+      @keyframes overlayFadeInSmooth {
+        from {
+          opacity: 0;
+          backdrop-filter: blur(0px);
+        }
+        to {
+          opacity: 1;
+          backdrop-filter: blur(8px);
+        }
+      }
+      .work-modal-overlay.active,
+      .work-modal-overlay[style*="display: flex"] {
+        animation: overlayFadeInSmooth 0.4s ease forwards;
+      }
+      .work-modal-overlay {
+        backdrop-filter: blur(0px);
+      }
+
+      .btn-blue:hover {
+        box-shadow: 0 8px 24px rgba(49, 130, 206, 0.4);
+        transform: translateY(-3px) scale(1.02);
+      }
+      .btn-red:hover {
+        box-shadow: 0 8px 24px rgba(229, 62, 62, 0.3);
+        transform: translateY(-2px) scale(1.02);
+      }
+      .btn-green:hover {
+        box-shadow: 0 8px 24px rgba(56, 161, 105, 0.4);
+        transform: translateY(-3px) scale(1.02);
+      }
+      .btn-filter:hover,
+      .btn-settings:hover,
+      .btn-outline:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
+      }
+      body.dark-mode .btn-filter:hover,
+      body.dark-mode .btn-settings:hover,
+      body.dark-mode .btn-outline:hover {
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+      }
+
+      .average-card {
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .average-card:hover {
+        transform: translateY(-6px) scale(1.02);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.08);
+        border-color: #cbd5e0;
+      }
+      body.dark-mode .average-card:hover {
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+        border-color: #718096;
+      }
+
+      .fc-event,
+      .fc-event-main,
+      .fc-event-title,
+      .fc-daygrid-event,
+      .fc-daygrid-event a {
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+      }
+      .fc-event:hover {
+        background-color: rgba(49, 130, 206, 0.15) !important;
+        border-radius: 8px !important;
+        transform: scale(1.08) translateY(-2px) !important;
+        z-index: 10;
+        position: relative;
+        box-shadow: 0 4px 12px rgba(49, 130, 206, 0.2) !important;
+      }
+
+      .safe-table tbody tr {
+        transition: all 0.3s ease;
+      }
+      .safe-table tbody tr:hover {
+        background-color: rgba(49, 130, 206, 0.06);
+        transform: scale(1.01);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+      }
+      body.dark-mode .safe-table tbody tr:hover {
+        background-color: rgba(99, 179, 237, 0.1);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      }
+
+      .list-item {
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .list-item:hover {
+        background-color: #edf2f7;
+        transform: translateX(6px) scale(1.01);
+        padding-left: 8px;
+        border-radius: 6px;
+      }
+      body.dark-mode .list-item:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+      }
+
+      .menu-item-btn {
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+      .menu-item-btn:hover {
+        transform: translateX(8px);
+        background-color: #4a5568;
+        box-shadow: -4px 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .filter-menu-popup {
+        transform-origin: top right;
+        transition:
+          opacity 0.3s ease,
+          transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+        opacity: 0;
+        transform: scale(0.9) translateY(-10px) !important;
+      }
+      .filter-menu-popup.open {
+        opacity: 1;
+        transform: scale(1) translateY(0) !important;
+      }
+
+      @keyframes viewFadeInDramatic {
+        0% {
+          opacity: 0;
+          transform: translateY(20px) scale(0.98);
+          filter: blur(4px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+          filter: blur(0px);
+        }
+      }
+      #calendarView,
+      #trendsView,
+      #ratioView,
+      #averageView,
+      #safeView,
+      #myPageView {
+        animation: viewFadeInDramatic 0.6s cubic-bezier(0.16, 1, 0.3, 1)
+          forwards;
+      }
     </style>
   </head>
   <body>
@@ -4013,9 +4193,10 @@
             maintainAspectRatio: false,
             cutout: "65%",
             animation: {
-              duration: 1000,
+              duration: 1200,
+              easing: "easeOutBack",
               animateRotate: true,
-              animateScale: false,
+              animateScale: true,
             },
             plugins: {
               legend: { display: false },
@@ -5268,6 +5449,30 @@
           goal > 0 ? "目標 ¥" + goal.toLocaleString() : "目標未設定";
       }
 
+      let prevMonthlyTotal = 0;
+
+      function animateValue(element, start, end, duration, currentMonth) {
+        if (start === end) {
+          element.textContent = `${currentMonth}月の合計: ¥${end.toLocaleString()}`;
+          return;
+        }
+        if (element.animationId) cancelAnimationFrame(element.animationId);
+        const startTime = performance.now();
+        function update(currentTime) {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const easeProgress = 1 - Math.pow(1 - progress, 4);
+          const currentVal = Math.floor(start + (end - start) * easeProgress);
+          element.textContent = `${currentMonth}月の合計: ¥${currentVal.toLocaleString()}`;
+          if (progress < 1) {
+            element.animationId = requestAnimationFrame(update);
+          } else {
+            element.textContent = `${currentMonth}月の合計: ¥${end.toLocaleString()}`;
+          }
+        }
+        element.animationId = requestAnimationFrame(update);
+      }
+
       function updateMonthlyTotal() {
         const displayEl = document.getElementById("monthlyTotalDisplay");
         if (!calendar) return;
@@ -5286,7 +5491,16 @@
             }, 0);
           }
         }
-        displayEl.textContent = `${currentMonth}月の合計: ¥${monthlyTotal.toLocaleString()}`;
+
+        animateValue(
+          displayEl,
+          prevMonthlyTotal,
+          monthlyTotal,
+          1200,
+          currentMonth,
+        );
+        prevMonthlyTotal = monthlyTotal;
+
         const monthKey = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
         const goals = loadGoals();
         const goal = goals[monthKey] || 0;
@@ -5431,9 +5645,10 @@
                 padding: { right: 80 },
               },
               animation: {
-                duration: 800,
+                duration: 1200,
+                easing: "easeOutBack",
                 animateRotate: true,
-                animateScale: false,
+                animateScale: true,
                 onProgress: function (context) {
                   context.chart.centerAlpha =
                     context.currentStep / context.numSteps;
@@ -5866,9 +6081,10 @@
             maintainAspectRatio: false,
             cutout: "65%",
             animation: {
-              duration: 1000,
+              duration: 1200,
+              easing: "easeOutBack",
               animateRotate: true,
-              animateScale: false,
+              animateScale: true,
             },
             plugins: {
               legend: { display: false },
@@ -6184,9 +6400,10 @@
               maintainAspectRatio: false,
               cutout: "62%",
               animation: {
-                duration: 800,
+                duration: 1200,
+                easing: "easeOutBack",
                 animateRotate: true,
-                animateScale: false,
+                animateScale: true,
               },
               plugins: {
                 legend: { display: false },
