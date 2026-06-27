@@ -144,7 +144,7 @@
         border-radius: 8px;
         font-weight: bold;
         font-size: 16px;
-        border: none;
+        border: 1px solid #e2e8f0;
         white-space: nowrap;
         width: 100%;
         box-sizing: border-box;
@@ -155,6 +155,21 @@
         gap: 8px;
         margin-top: 6px;
         width: 100%;
+      }
+      .mobile-only-progress {
+        display: none !important;
+      }
+      .fc-title-progress {
+        width: 300px;
+        max-width: 100%;
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .fc-title-progress .header-progress-bar {
+        height: 22px !important;
+        min-height: 22px !important;
       }
       .header-progress-bar {
         flex: 1;
@@ -1110,9 +1125,9 @@
         color: #cbd5e0;
       }
       body.dark-mode .monthly-total {
-        background: transparent;
+        background: #1a202c;
         color: #4fd1c5;
-        border-color: transparent;
+        border-color: #234e52;
       }
       body.dark-mode .header-progress-bar {
         background: #1f2937 !important;
@@ -1680,6 +1695,18 @@
           font-weight: 800;
           font-size: 14px;
         }
+        .mobile-only-progress {
+          display: flex !important;
+        }
+        .fc-title-progress {
+          display: none !important;
+        }
+        .monthly-total {
+          font-size: 13px;
+          height: 32px;
+          padding: 0 8px;
+          border: none;
+        }
         .progress-wrapper {
           margin-top: 0;
           flex: 1 1 auto;
@@ -1714,10 +1741,9 @@
         body.is-average-view #headerBottomLeft {
           display: none !important;
         }
-        .monthly-total {
-          font-size: 13px;
-          height: 32px;
-          padding: 0 8px;
+        body.dark-mode .monthly-total {
+          background: transparent;
+          border-color: transparent;
         }
         .btn-filter {
           height: 32px;
@@ -3464,11 +3490,11 @@
               <div class="monthly-total" id="monthlyTotalDisplay">
                 0月の合計: ¥0
               </div>
-              <div class="progress-wrapper">
-                <span class="header-progress-text" id="calendarGoalText">目標 ¥0</span>
+              <div class="progress-wrapper mobile-only-progress">
+                <span class="header-progress-text" id="calendarGoalTextMobile">目標 ¥0</span>
                 <div class="header-progress-bar" style="position:relative;">
-                  <div class="header-progress-fill" id="calendarHeaderProgressFill"></div>
-                  <div id="calendarHeaderProgressText" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-weight:bold;color:#fff;">0%</div>
+                  <div class="header-progress-fill" id="calendarHeaderProgressFillMobile"></div>
+                  <div id="calendarHeaderProgressTextMobile" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-weight:bold;color:#fff;">0%</div>
                 </div>
               </div>
             </div>
@@ -6255,7 +6281,22 @@
       }
 
       function updateCalendarHeaderProgress() {
-        if (!calendar) return;
+        const titleEl = document.querySelector(".fc-toolbar-title");
+        if (!titleEl || !calendar) return;
+
+        let wrap = document.querySelector(".fc-toolbar-title-wrap");
+        if (!wrap) {
+          wrap = document.createElement("div");
+          wrap.className = "fc-toolbar-title-wrap";
+          titleEl.parentNode.insertBefore(wrap, titleEl);
+          wrap.appendChild(titleEl);
+
+          const progress = document.createElement("div");
+          progress.className = "fc-title-progress";
+          progress.innerHTML =
+            '<div class="progress-wrapper" style="display:flex;align-items:center;gap:10px;"><span class="header-progress-text" id="calendarGoalText">目標 ¥0</span><div class="header-progress-bar" style="position:relative;"><div class="header-progress-fill" id="calendarHeaderProgressFill"></div><div id="calendarHeaderProgressText" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-weight:bold;color:#fff;">0%</div></div></div>';
+          wrap.appendChild(progress);
+        }
 
         const currentData = calendar.getDate();
         const year = currentData.getFullYear();
@@ -6280,12 +6321,16 @@
         }
 
         const pct = goal > 0 ? Math.min(100, (total / goal) * 100) : 0;
-        document.getElementById("calendarHeaderProgressFill").style.width =
-          pct + "%";
-        document.getElementById("calendarHeaderProgressText").textContent =
-          goal > 0 ? pct.toFixed(1) + "%" : "-";
-        document.getElementById("calendarGoalText").textContent =
-          goal > 0 ? "目標 ¥" + goal.toLocaleString() : "目標未設定";
+        document.getElementById("calendarHeaderProgressFill").style.width = pct + "%";
+        document.getElementById("calendarHeaderProgressText").textContent = goal > 0 ? pct.toFixed(1) + "%" : "-";
+        document.getElementById("calendarGoalText").textContent = goal > 0 ? "目標 ¥" + goal.toLocaleString() : "目標未設定";
+
+        const fillMobile = document.getElementById("calendarHeaderProgressFillMobile");
+        if (fillMobile) fillMobile.style.width = pct + "%";
+        const textMobile = document.getElementById("calendarHeaderProgressTextMobile");
+        if (textMobile) textMobile.textContent = goal > 0 ? pct.toFixed(1) + "%" : "-";
+        const goalMobile = document.getElementById("calendarGoalTextMobile");
+        if (goalMobile) goalMobile.textContent = goal > 0 ? "目標 ¥" + goal.toLocaleString() : "目標未設定";
       }
 
       let prevMonthlyTotal = 0;
