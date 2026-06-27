@@ -2051,12 +2051,13 @@
           height: 140px;
         }
         .mypage-profile-section {
-          flex-direction: column;
-          align-items: center;
+          flex-direction: row;
+          align-items: flex-end;
           padding: 16px;
         }
         .mypage-left {
           margin-top: -50px;
+          align-items: flex-start;
         }
         .mypage-icon {
           width: 90px;
@@ -2064,13 +2065,23 @@
         }
         .mypage-name {
           font-size: 20px;
-          text-align: center;
+          text-align: left;
         }
         .mypage-right {
-          padding-top: 12px;
-          width: 100%;
-          display: flex;
-          justify-content: center;
+          padding-top: 0;
+          width: auto;
+          display: block;
+          margin-bottom: 2px;
+        }
+        .settings-text {
+          display: none;
+        }
+        .btn-settings {
+          padding: 8px;
+          border-radius: 50%;
+        }
+        .btn-settings svg {
+          margin-right: 0 !important;
         }
         .mypage-analytics {
           padding: 12px 12px 20px;
@@ -3688,7 +3699,7 @@
             <div class="mypage-name" id="myPageName">ゲスト</div>
           </div>
           <div class="mypage-right">
-            <button class="btn-settings" onclick="openMyPageSettings()"><svg style="vertical-align: middle; margin-right: 4px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg> 設定</button>
+            <button class="btn-settings" onclick="openMyPageSettings()"><svg style="vertical-align: middle; margin-right: 4px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="settings-text"> 設定</span></button>
           </div>
         </div>
         <div class="mypage-analytics">
@@ -7916,6 +7927,92 @@
         if (!isGoogleDriveConfigured()) return;
         if (window.location.protocol === "file:") return;
         if (isGoogleDriveConnected()) pullFromGoogleDrive(true);
+      }
+
+      // スマホ向けスワイプでの画面切り替え
+      let swipeStartX = 0;
+      let swipeStartY = 0;
+      let swipeEndX = 0;
+      let swipeEndY = 0;
+
+      document.body.addEventListener('touchstart', function(e) {
+        if (e.changedTouches && e.changedTouches.length > 0) {
+          swipeStartX = e.changedTouches[0].screenX;
+          swipeStartY = e.changedTouches[0].screenY;
+        }
+      }, {passive: true, capture: true});
+
+      document.body.addEventListener('touchend', function(e) {
+        if (window.innerWidth > 768) return;
+        if (e.changedTouches && e.changedTouches.length > 0) {
+          swipeEndX = e.changedTouches[0].screenX;
+          swipeEndY = e.changedTouches[0].screenY;
+          handleSwipeViewSwitch(e.target);
+        }
+      }, {passive: true, capture: true});
+
+      function isHorizontallyScrollable(element) {
+        if (!element) return false;
+        if (element.nodeType !== Node.ELEMENT_NODE) {
+          return isHorizontallyScrollable(element.parentElement);
+        }
+        if (element === document.body || element === document.documentElement) return false;
+        const style = window.getComputedStyle(element);
+        if (style.overflowX === 'auto' || style.overflowX === 'scroll') {
+          if (element.scrollWidth > element.clientWidth + 1) {
+            return true;
+          }
+        }
+        return isHorizontallyScrollable(element.parentElement);
+      }
+
+      function handleSwipeViewSwitch(target) {
+        if (document.getElementById("sidebar") && document.getElementById("sidebar").classList.contains("open")) return;
+        
+        const overlays = document.querySelectorAll('.work-modal-overlay, .sidebar-overlay');
+        for (let i = 0; i < overlays.length; i++) {
+          if (window.getComputedStyle(overlays[i]).display !== 'none') {
+            return;
+          }
+        }
+
+        const deltaX = swipeEndX - swipeStartX;
+        const deltaY = swipeEndY - swipeStartY;
+        
+        if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+          if (isHorizontallyScrollable(target)) return;
+
+          const viewList = ["calendar", "trends", "ratio", "average", "safe", "mypage"];
+          let currentView = "calendar";
+          if (document.getElementById("trendsView") && document.getElementById("trendsView").style.display === "flex") currentView = "trends";
+          else if (document.getElementById("ratioView") && document.getElementById("ratioView").style.display === "flex") currentView = "ratio";
+          else if (document.getElementById("averageView") && document.getElementById("averageView").style.display === "flex") currentView = "average";
+          else if (document.getElementById("safeView") && document.getElementById("safeView").style.display === "flex") currentView = "safe";
+          else if (document.getElementById("myPageView") && document.getElementById("myPageView").style.display === "flex") currentView = "mypage";
+
+          const currentIndex = viewList.indexOf(currentView);
+
+          if (deltaX < 0) {
+            // 左スワイプ -> 次の画面
+            if (currentIndex < viewList.length - 1) {
+              switchViewByName(viewList[currentIndex + 1]);
+            }
+          } else {
+            // 右スワイプ -> 前の画面
+            if (currentIndex > 0) {
+              switchViewByName(viewList[currentIndex - 1]);
+            }
+          }
+        }
+      }
+
+      function switchViewByName(name) {
+        if (name === "calendar") showCalendarView();
+        else if (name === "trends") showTrendsView();
+        else if (name === "ratio") showRatioView();
+        else if (name === "average") showAverageView();
+        else if (name === "safe") showSafeView();
+        else if (name === "mypage") showMyPageView();
       }
 
       initGoogleDriveSync();
