@@ -131,7 +131,7 @@
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-        min-width: 180px;
+        min-width: 280px;
       }
       .monthly-total {
         background: transparent;
@@ -144,7 +144,7 @@
         border-radius: 8px;
         font-weight: bold;
         font-size: 16px;
-        border: 1px solid #e2e8f0;
+        border: none;
         white-space: nowrap;
         width: 100%;
         box-sizing: border-box;
@@ -158,13 +158,10 @@
       }
       .header-progress-bar {
         flex: 1;
-        height: 36px;
+        height: 24px;
         background: #e2e8f0;
-        border-radius: 999px;
+        border-radius: 12px;
         overflow: hidden;
-        height: 50px !important;
-        min-height: 50px !important;
-        border-radius: 12px !important;
       }
       .header-progress-fill {
         height: 100%;
@@ -182,14 +179,6 @@
         flex-direction: column;
         align-items: center;
         gap: 4px;
-      }
-      .fc-title-progress {
-        width: 300px;
-        max-width: 100%;
-      }
-      .fc-title-progress .header-progress-bar {
-        height: 22px !important;
-        min-height: 22px !important;
       }
 
       /* ================= 表示切り替えフィルター ================= */
@@ -330,13 +319,6 @@
       }
       .fc-header-toolbar .fc-toolbar-chunk:nth-child(3) {
         justify-self: end;
-      }
-      .fc-title-progress {
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        width: 300px;
       }
       .fc-toolbar-title-wrap {
         display: block;
@@ -1128,12 +1110,15 @@
         color: #cbd5e0;
       }
       body.dark-mode .monthly-total {
-        background: #1a202c;
+        background: transparent;
         color: #4fd1c5;
-        border-color: #234e52;
+        border-color: transparent;
       }
       body.dark-mode .header-progress-bar {
         background: #1f2937 !important;
+      }
+      body.dark-mode .header-progress-text {
+        color: #a0aec0;
       }
       body.dark-mode .menu-btn {
         color: #cbd5e0;
@@ -1625,8 +1610,8 @@
           flex-direction: row;
           flex-wrap: wrap;
           align-items: center;
-          justify-content: space-between;
-          gap: 6px;
+          justify-content: flex-start;
+          gap: 4px;
           margin-bottom: 4px;
         }
         .left-header {
@@ -1634,7 +1619,9 @@
           align-items: center;
           gap: 6px;
           min-width: 0;
-          flex: 1 1 auto;
+          flex: 0 1 auto;
+          order: 1;
+          margin-right: auto;
         }
         .title {
           font-size: 16px;
@@ -1650,32 +1637,16 @@
           flex-shrink: 0;
         }
         .right-header {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 4px;
-          width: 100%;
-          justify-content: space-between;
-          align-items: center;
-          margin-top: 2px;
+          display: contents;
         }
-        .right-header > .monthly-total-container,
-        .right-header > .monthly-total,
-        .right-header > #safeTotalContainer {
-          flex: 1 1 auto;
-          min-width: 0;
-          order: 1;
-          align-items: flex-start;
-        }
-        .right-header .monthly-total {
-          justify-content: flex-start;
-        }
-        .right-header .filter-container,
-        .right-header > .btn-filter {
+        .filter-container,
+        .btn-filter,
+        #darkModeBtn {
           order: 2;
-          flex: 0 1 auto;
+          flex: 0 0 auto;
         }
         /* ボタン類をコンパクトに */
-        .right-header .btn-filter {
+        .btn-filter {
           width: 34px;
           height: 34px;
           padding: 0;
@@ -1684,33 +1655,50 @@
           justify-content: center;
           border-radius: 50%;
         }
-        .right-header .filter-container {
-          flex: 0 1 auto;
+        .monthly-total-container,
+        #safeTotalContainer,
+        #trendsTotalDisplay,
+        #trendsAverageDisplayMobile {
+          order: 3;
+          margin-top: 4px !important;
         }
-        body.is-trends-view .right-header {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 4px;
+        .monthly-total-container,
+        #safeTotalContainer {
+          flex: 1 1 100%;
+          max-width: 100%;
+          min-width: 0;
+          align-items: center;
+          flex-direction: row;
+          gap: 8px;
+        }
+        .monthly-total-container .monthly-total,
+        #safeTotalContainer .monthly-total {
           justify-content: flex-start;
+          width: auto;
+          flex: 0 0 auto;
+          padding: 0;
+          font-weight: 800;
+          font-size: 14px;
         }
-        body.is-trends-view #trendsUnitContainer,
-        body.is-trends-view #darkModeBtn,
-        body.is-trends-view #trendsFilterContainer {
-          flex: 0 1 auto;
-          order: 1;
+        .progress-wrapper {
+          margin-top: 0;
+          flex: 1 1 auto;
+          gap: 6px;
         }
-        body.is-trends-view .right-header::after {
-          content: "";
-          flex-basis: 100%;
-          height: 0;
-          order: 2;
+        .progress-wrapper .header-progress-text {
+          font-size: 10px;
+          color: #718096;
         }
-        body.is-trends-view #trendsTotalDisplay,
-        body.is-trends-view #trendsAverageDisplayMobile {
+        .progress-wrapper .header-progress-bar {
+          height: 18px;
+        }
+        #calendarHeaderProgressText {
+          font-size: 9px !important;
+        }
+        #trendsTotalDisplay,
+        #trendsAverageDisplayMobile {
           flex: 1 1 calc(50% - 2px);
           max-width: calc(50% - 2px) !important;
-          min-width: 0;
-          margin-top: 4px !important;
           font-size: 12px;
           padding: 0 4px;
           height: 32px;
@@ -1722,34 +1710,9 @@
           text-overflow: ellipsis;
           box-sizing: border-box;
         }
-        body.is-trends-view #trendsTotalDisplay {
-          order: 3;
-        }
-        body.is-trends-view #trendsAverageDisplayMobile {
-          order: 4;
-        }
-        body.is-trends-view #headerBottomLeft {
-          display: none !important;
-        }
-
-        body.is-average-view .right-header {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 4px;
-          justify-content: flex-start;
-        }
-        body.is-average-view #averageUnitContainer,
-        body.is-average-view #darkModeBtn,
-        body.is-average-view #averageFilterContainer {
-          flex: 0 1 auto;
-          order: 1;
-        }
+        body.is-trends-view #headerBottomLeft,
         body.is-average-view #headerBottomLeft {
           display: none !important;
-        }
-        .monthly-total-container {
-          min-width: 0;
-          align-items: center;
         }
         .monthly-total {
           font-size: 13px;
@@ -1889,23 +1852,6 @@
           display: flex !important;
           flex-direction: column !important;
           align-items: flex-start !important;
-        }
-        .fc-title-progress {
-          position: static !important;
-          transform: none !important;
-          width: 100% !important;
-          margin-top: 6px;
-        }
-        .fc-title-progress .progress-wrapper {
-          flex-wrap: wrap;
-          gap: 2px !important;
-        }
-        .fc-title-progress .header-progress-text {
-          font-size: 11px;
-        }
-        .fc-title-progress .header-progress-bar {
-          height: 16px !important;
-          min-height: 16px !important;
         }
         #calendarHeaderProgressText {
           font-size: 10px !important;
@@ -3517,6 +3463,13 @@
             <div class="monthly-total-container" id="monthlyTotalContainer">
               <div class="monthly-total" id="monthlyTotalDisplay">
                 0月の合計: ¥0
+              </div>
+              <div class="progress-wrapper">
+                <span class="header-progress-text" id="calendarGoalText">目標 ¥0</span>
+                <div class="header-progress-bar" style="position:relative;">
+                  <div class="header-progress-fill" id="calendarHeaderProgressFill"></div>
+                  <div id="calendarHeaderProgressText" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-weight:bold;color:#fff;">0%</div>
+                </div>
               </div>
             </div>
 
@@ -6302,22 +6255,7 @@
       }
 
       function updateCalendarHeaderProgress() {
-        const titleEl = document.querySelector(".fc-toolbar-title");
-        if (!titleEl || !calendar) return;
-
-        let wrap = document.querySelector(".fc-toolbar-title-wrap");
-        if (!wrap) {
-          wrap = document.createElement("div");
-          wrap.className = "fc-toolbar-title-wrap";
-          titleEl.parentNode.insertBefore(wrap, titleEl);
-          wrap.appendChild(titleEl);
-
-          const progress = document.createElement("div");
-          progress.className = "fc-title-progress";
-          progress.innerHTML =
-            '<div class="progress-wrapper" style="display:flex;align-items:center;gap:10px;"><span class="header-progress-text" id="calendarGoalText">目標 ¥0</span><div class="header-progress-bar" style="position:relative;"><div class="header-progress-fill" id="calendarHeaderProgressFill"></div><div id="calendarHeaderProgressText" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-weight:bold;color:#fff;">0%</div></div></div>';
-          wrap.appendChild(progress);
-        }
+        if (!calendar) return;
 
         const currentData = calendar.getDate();
         const year = currentData.getFullYear();
