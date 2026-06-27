@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>📆収益カレンダー</title>
+    <title>収益カレンダー</title>
 
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -1710,16 +1710,26 @@
         .progress-wrapper {
           margin-top: 0;
           flex: 1 1 auto;
-          gap: 6px;
+          gap: 4px;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          min-width: 0;
         }
         .progress-wrapper .header-progress-text {
-          font-size: 10px;
+          font-size: 12px;
           color: #718096;
+          align-self: center;
+          line-height: 1;
         }
         .progress-wrapper .header-progress-bar {
-          height: 18px;
+          height: 16px;
+          min-height: 16px;
+          flex: 0 0 16px;
+          width: 85%;
         }
-        #calendarHeaderProgressText {
+        #calendarHeaderProgressText,
+        #calendarHeaderProgressTextMobile {
           font-size: 9px !important;
         }
         #trendsTotalDisplay,
@@ -2686,7 +2696,11 @@
 
     <div id="celebrationOverlay">
       <div class="celebration-message">
-        🎉 目標達成おめでとう！ 🎉
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 4px;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.53 10.15 16 9.07C16.89 8.35 17.5 7.4 17.5 6a3 3 0 0 0-3-3c-1.39 0-2.35.61-3.08 1.5l-1.12 1.43"></path><path d="M9.47 13.85 8 14.93C7.11 15.65 6.5 16.6 6.5 18a3 3 0 0 0 3 3c1.39 0 2.35-.61 3.08-1.5l1.12-1.43"></path><path d="M12 12 9 9"></path><path d="M15 15l3 3"></path><path d="M14.5 14.5l-3-3"></path><path d="M9.5 9.5l3 3"></path><circle cx="12" cy="12" r="2"></circle></svg>
+          <span>目標達成おめでとう！</span>
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.53 10.15 16 9.07C16.89 8.35 17.5 7.4 17.5 6a3 3 0 0 0-3-3c-1.39 0-2.35.61-3.08 1.5l-1.12 1.43"></path><path d="M9.47 13.85 8 14.93C7.11 15.65 6.5 16.6 6.5 18a3 3 0 0 0 3 3c1.39 0 2.35-.61 3.08-1.5l1.12-1.43"></path><path d="M12 12 9 9"></path><path d="M15 15l3 3"></path><path d="M14.5 14.5l-3-3"></path><path d="M9.5 9.5l3 3"></path><circle cx="12" cy="12" r="2"></circle></svg>
+        </div>
         <small>今月の目標金額を達成しました！</small>
       </div>
     </div>
@@ -2694,14 +2708,14 @@
     <div class="work-modal-overlay" id="backupModal">
       <div class="work-modal-content" style="max-width: 520px">
         <div class="work-modal-header">
-          <h3 class="work-modal-title">💾 データのバックアップ・移行</h3>
+          <h3 class="work-modal-title" style="display: flex; align-items: center; gap: 8px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>データのバックアップ・移行</h3>
           <button class="close-btn" onclick="closeBackupModal()">
             &times;
           </button>
         </div>
         <div class="backup-actions">
           <div class="backup-section" id="cloudSyncSection">
-            <h5>☁️ Google Drive クラウド同期</h5>
+            <h5 style="display: flex; align-items: center; gap: 6px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a5.5 5.5 0 0 0 1.5-10.7A10 10 0 0 0 6.6 6.6 8 8 0 0 0 4 20h13.5"></path></svg>Google Drive クラウド同期</h5>
             <p>
               パソコンとスマホでデータを同期します。変更があると自動で Google
               Drive に保存されます。（Google Apps Script 使用・Cloud Console
@@ -2756,7 +2770,7 @@
             <div class="cloud-sync-meta" id="cloudSyncMeta"></div>
           </div>
           <div class="backup-section">
-            <h5>📤 エクスポート（ダウンロード）</h5>
+            <h5 style="display: flex; align-items: center; gap: 6px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>エクスポート（ダウンロード）</h5>
             <p>
               現在のデータをファイルに保存します。JSONは完全バックアップ、CSVは表計算ソフトでも開けます。
             </p>
@@ -2770,7 +2784,7 @@
             </div>
           </div>
           <div class="backup-section">
-            <h5>📥 インポート（復元）</h5>
+            <h5 style="display: flex; align-items: center; gap: 6px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>インポート（復元）</h5>
             <p>
               保存したファイルからデータを復元します。JSONは全データを上書き、CSVは収益・金庫データを追加します。
             </p>
@@ -2810,7 +2824,7 @@
     <div class="work-modal-overlay" id="safeModal">
       <div class="work-modal-content" style="max-width: 400px">
         <div class="work-modal-header">
-          <h3 class="work-modal-title">🏦 金庫に登録</h3>
+          <h3 class="work-modal-title" style="display: flex; align-items: center; gap: 8px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="20" width="16" height="2"></rect><path d="M12 2 2 8h20L12 2Z"></path><rect x="6" y="10" width="2" height="8"></rect><rect x="16" y="10" width="2" height="8"></rect><rect x="11" y="10" width="2" height="8"></rect></svg>金庫に登録</h3>
           <button class="close-btn" onclick="closeSafeModal()">&times;</button>
         </div>
         <div style="display: flex; flex-direction: column; gap: 15px">
@@ -2940,7 +2954,7 @@
     <div class="work-modal-overlay" id="myPageSettingsModal">
       <div class="work-modal-content" style="max-width: 400px">
         <div class="work-modal-header">
-          <h3 class="work-modal-title">⚙️ マイページ設定</h3>
+          <h3 class="work-modal-title" style="display: flex; align-items: center; gap: 8px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>マイページ設定</h3>
           <button class="close-btn" onclick="closeMyPageSettings()">
             &times;
           </button>
@@ -3097,7 +3111,7 @@
         </div>
 
         <div class="work-view" id="view-projects">
-          <h4 class="section-title">📁 グループの登録</h4>
+          <h4 class="section-title" style="display: flex; align-items: center; gap: 6px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> グループの登録</h4>
           <div class="input-group">
             <input
               type="text"
@@ -3107,7 +3121,7 @@
             <button class="btn-blue" onclick="addGroup()">追加</button>
           </div>
 
-          <h4 class="section-title">📄 項目の登録</h4>
+          <h4 class="section-title" style="display: flex; align-items: center; gap: 6px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> 項目の登録</h4>
           <div class="input-group">
             <select id="projectGroupSelect"></select>
             <input type="text" id="newProjectName" placeholder="項目名" />
@@ -3119,7 +3133,7 @@
         </div>
 
         <div class="work-view" id="view-goals">
-          <h4 class="section-title">🎯 月別目標金額の設定</h4>
+          <h4 class="section-title" style="display: flex; align-items: center; gap: 6px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg> 月別目標金額の設定</h4>
           <div class="input-group">
             <input
               type="month"
@@ -3674,16 +3688,14 @@
             <div class="mypage-name" id="myPageName">ゲスト</div>
           </div>
           <div class="mypage-right">
-            <button class="btn-settings" onclick="openMyPageSettings()">
-              ⚙️ 設定
-            </button>
+            <button class="btn-settings" onclick="openMyPageSettings()"><svg style="vertical-align: middle; margin-right: 4px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg> 設定</button>
           </div>
         </div>
         <div class="mypage-analytics">
           <section class="mypage-chart-section">
             <div class="mypage-chart-header">
               <div>
-                <h3 class="mypage-chart-title">📅 今日の収益</h3>
+                <h3 class="mypage-chart-title" style="display: flex; align-items: center; gap: 6px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> 今日の収益</h3>
                 <div
                   class="mypage-chart-subtext"
                   id="myPageTodayDateLabel"
@@ -5524,12 +5536,12 @@
         const titleEl = document.getElementById("workModalTitle");
 
         if (viewType === "projects") {
-          titleEl.textContent = "📂 グループ・項目の登録";
+          titleEl.innerHTML = '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg> グループ・項目の登録</span>';
           document.getElementById("view-projects").classList.add("active");
           updateGroupDropdowns();
           renderProjectsList();
         } else if (viewType === "goals") {
-          titleEl.textContent = "🎯 目標金額の設定";
+          titleEl.innerHTML = '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg> 目標金額の設定</span>';
           document.getElementById("view-goals").classList.add("active");
           if (!document.getElementById("goalMonthSelect").value) {
             document.getElementById("goalMonthSelect").value = new Date()
@@ -5538,12 +5550,12 @@
           }
           loadGoalForMonth();
         } else if (viewType === "monthly") {
-          titleEl.textContent = "📅 項目ごとの一括入力";
+          titleEl.innerHTML = '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg> 項目ごとの一括入力</span>';
           document.getElementById("view-monthly").classList.add("active");
           updateProjectDropdownForMonthly();
           renderMonthlyDays();
         } else if (viewType === "daily") {
-          titleEl.textContent = "⚡ 各日の一括入力";
+          titleEl.innerHTML = '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> 各日の一括入力</span>';
           document.getElementById("view-daily").classList.add("active");
           renderDailyFields();
         }
@@ -5606,7 +5618,7 @@
         allLabel.style.paddingBottom = "8px";
         allLabel.style.marginBottom = "8px";
         allLabel.innerHTML = `<input type="checkbox" id="${allCbId}" class="filter-cb" checked onchange="${onAllChange}(this.checked)">
-                              <span class="icon"></span>📊 すべての項目`;
+                              <span class="icon"></span><span style="display:inline-flex; align-items:center; gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>すべての項目</span>`;
         menu.appendChild(allLabel);
 
         groups.forEach((g) => {
@@ -5615,13 +5627,13 @@
           const gLabel = document.createElement("label");
           gLabel.className = "filter-item group";
           gLabel.innerHTML = `<input type="checkbox" class="filter-cb ${groupCbClass}" data-group="${escapeHtml(g)}" checked onchange="${onGroupChange}('${escapeHtml(g)}', this.checked)">
-                                <span class="icon"></span>📁 ${escapeHtml(maskName(g))}`;
+                                <span class="icon"></span><span style="display:inline-flex; align-items:center; gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>${escapeHtml(maskName(g))}</span>`;
           menu.appendChild(gLabel);
           groupProjs.forEach((p) => {
             const pLabel = document.createElement("label");
             pLabel.className = "filter-item proj";
             pLabel.innerHTML = `<input type="checkbox" class="filter-cb ${projCbClass}" data-group="${escapeHtml(g)}" value="${escapeHtml(p.name)}" checked onchange="${onProjChange}()">
-                                    <span class="icon"></span>📄 ${escapeHtml(maskName(p.name))}`;
+                                    <span class="icon"></span><span style="display:inline-flex; align-items:center; gap:4px;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>${escapeHtml(maskName(p.name))}</span>`;
             menu.appendChild(pLabel);
           });
         });
@@ -6077,7 +6089,7 @@
             h5.style.fontWeight = "bold";
             h5.style.marginTop = "15px";
             h5.style.color = "#4a5568";
-            h5.textContent = `📁 ${maskName(g)}`;
+            h5.innerHTML = `<span style="display:flex; align-items:center; gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>${maskName(g)}</span>`;
             container.appendChild(h5);
             groupProjs.forEach((p) => {
               const originalIndex = projs.findIndex(
@@ -6088,7 +6100,7 @@
               const selectHtml = `<select class="group-move-select" onchange="changeProjectGroup(${originalIndex}, this.value)">
                                             ${groupOptionsHtml.replace(`value="${escapeHtml(p.group)}"`, `value="${escapeHtml(p.group)}" selected`)}
                                         </select>`;
-              div.innerHTML = `<span style="margin-left: 15px;">📄 ${escapeHtml(maskName(p.name))}</span>
+              div.innerHTML = `<span style="margin-left: 15px; display:flex; align-items:center; gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>${escapeHtml(maskName(p.name))}</span>
                                      <div style="display:flex; gap:8px; align-items:center;">${selectHtml}<button class="btn-red" onclick="deleteProject(${originalIndex})">削除</button></div>`;
               container.appendChild(div);
             });
@@ -6219,14 +6231,14 @@
             h5.style.fontWeight = "bold";
             h5.style.marginTop = "15px";
             h5.style.color = "#4a5568";
-            h5.textContent = `📁 ${maskName(g)}`;
+            h5.innerHTML = `<span style="display:flex; align-items:center; gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>${maskName(g)}</span>`;
             container.appendChild(h5);
             groupProjs.forEach((p) => {
               const existingItem = dayList.find((item) => item.name === p.name);
               const value = existingItem ? existingItem.amount : "";
               const div = document.createElement("div");
               div.className = "vertical-input-row";
-              div.innerHTML = `<label style="margin-left: 15px;">📄 ${escapeHtml(maskName(p.name))}</label><input type="number" class="daily-amount-input" data-project="${escapeHtml(p.name)}" value="${value}" placeholder="0" min="0">`;
+              div.innerHTML = `<label style="margin-left: 15px; display:flex; align-items:center; gap:6px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>${escapeHtml(maskName(p.name))}</label><input type="number" class="daily-amount-input" data-project="${escapeHtml(p.name)}" value="${value}" placeholder="0" min="0">`;
               container.appendChild(div);
             });
           }
@@ -7403,7 +7415,7 @@
         if (filteredList.length === 0) {
           const emptyColor = isDark ? "#718096" : "#a0aec0";
           listEl.innerHTML = `<div style="text-align:center; padding: 22px 0; color: ${emptyColor};">
-                <div style="font-size: 26px; margin-bottom: 8px;">📭</div>
+                <div style="margin-bottom: 8px; display:flex; justify-content:center;"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 13V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h9"></path><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path><path d="M19 16v6"></path><path d="M16 19h6"></path></svg></div>
                 <div style="font-size: 14px;">本日の収益はまだありません</div>
             </div>`;
           return;
