@@ -5103,6 +5103,8 @@
               legend: { display: false },
               datalabels: {
                 color: "#fff",
+                textStrokeColor: (!isDark && window.innerWidth <= 768) ? "rgba(0,0,0,0.5)" : "transparent",
+                textStrokeWidth: (!isDark && window.innerWidth <= 768) ? 3 : 0,
                 font: { weight: "bold", size: 12 },
                 textAlign: "center",
                 formatter: (value, ctx) => {
@@ -6585,6 +6587,8 @@
                 },
                 datalabels: {
                   color: "#fff",
+                  textStrokeColor: (!isDark && window.innerWidth <= 768) ? "rgba(0,0,0,0.5)" : "transparent",
+                  textStrokeWidth: (!isDark && window.innerWidth <= 768) ? 3 : 0,
                   font: {
                     weight: "bold",
                     size: window.innerWidth <= 768 ? 9 : 11,
@@ -7026,6 +7030,8 @@
               legend: { display: false },
               datalabels: {
                 color: "#fff",
+                textStrokeColor: (!isDark && window.innerWidth <= 768) ? "rgba(0,0,0,0.5)" : "transparent",
+                textStrokeWidth: (!isDark && window.innerWidth <= 768) ? 3 : 0,
                 font: { weight: "bold", size: 12 },
                 textAlign: "center",
                 formatter: (value, ctx) => {
@@ -7355,6 +7361,8 @@
                 legend: { display: false },
                 datalabels: {
                   color: "#fff",
+                  textStrokeColor: (!isDark && window.innerWidth <= 768) ? "rgba(0,0,0,0.5)" : "transparent",
+                  textStrokeWidth: (!isDark && window.innerWidth <= 768) ? 3 : 0,
                   font: { weight: "bold", size: 9 },
                   textAlign: "center",
                   formatter: (value, ctx) => {
