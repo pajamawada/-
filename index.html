@@ -421,7 +421,9 @@
         align-items: center;
         justify-content: center;
         border-radius: 6px;
-        transition: background 0.2s, color 0.2s;
+        transition:
+          background 0.2s,
+          color 0.2s;
       }
       @media (hover: hover) and (pointer: fine) {
         .sidebar-close-btn:hover {
@@ -2450,8 +2452,7 @@
       #averageView,
       #safeView,
       #myPageView {
-        animation: viewFadeInDramatic 0.6s cubic-bezier(0.16, 1, 0.3, 1)
-          forwards;
+        animation: viewFadeInDramatic 0.6s cubic-bezier(0.16, 1, 0.3, 1);
       }
     </style>
   </head>
@@ -2463,11 +2464,34 @@
     ></div>
 
     <div class="sidebar" id="sidebar">
-      <div style="display: flex; justify-content: flex-start; align-items: center; gap: 12px; border-bottom: 1px solid #4a5568; padding-bottom: 15px; flex-shrink: 0;">
+      <div
+        style="
+          display: flex;
+          justify-content: flex-start;
+          align-items: center;
+          gap: 12px;
+          border-bottom: 1px solid #4a5568;
+          padding-bottom: 15px;
+          flex-shrink: 0;
+        "
+      >
         <button class="sidebar-close-btn" onclick="toggleSidebar()">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
         </button>
-        <h2 style="margin: 0; padding: 0; border: none;">メニュー</h2>
+        <h2 style="margin: 0; padding: 0; border: none">メニュー</h2>
       </div>
       <ul class="menu-list">
         <li>
@@ -6536,7 +6560,10 @@
                 },
                 datalabels: {
                   color: "#fff",
-                  font: { weight: "bold", size: window.innerWidth <= 768 ? 9 : 11 },
+                  font: {
+                    weight: "bold",
+                    size: window.innerWidth <= 768 ? 9 : 11,
+                  },
                   textAlign: "center",
                   formatter: (value, ctx) => {
                     if (value === 0) return null;
