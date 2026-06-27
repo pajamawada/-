@@ -134,8 +134,8 @@
         min-width: 180px;
       }
       .monthly-total {
-        background: #e6fffa;
-        color: #00a389;
+        background: transparent;
+        color: #4a5568;
         padding: 0 16px;
         height: 40px;
         display: flex;
@@ -144,7 +144,7 @@
         border-radius: 8px;
         font-weight: bold;
         font-size: 16px;
-        border: 1px solid #b2f5ea;
+        border: 1px solid #e2e8f0;
         white-space: nowrap;
         width: 100%;
         box-sizing: border-box;
@@ -1325,6 +1325,13 @@
       body.dark-mode .mypage-chart-subtext {
         color: #cbd5e0;
       }
+      body.dark-mode .icon-light-mode {
+        display: none !important;
+      }
+      body:not(.dark-mode) .icon-dark-mode {
+        display: none !important;
+      }
+
       /* ================= スクロールバーのスタイル ================= */
       ::-webkit-scrollbar {
         width: 6px;
@@ -1602,6 +1609,12 @@
           overflow-y: auto;
           -webkit-overflow-scrolling: touch;
         }
+        .btn-text {
+          display: none;
+        }
+        .btn-filter svg {
+          margin-right: 0 !important;
+        }
 
         /* ヘッダー */
         .header-wrapper {
@@ -1663,8 +1676,13 @@
         }
         /* ボタン類をコンパクトに */
         .right-header .btn-filter {
-          padding: 0 6px;
-          font-size: 11px;
+          width: 34px;
+          height: 34px;
+          padding: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
         }
         .right-header .filter-container {
           flex: 0 1 auto;
@@ -1673,44 +1691,42 @@
           display: flex;
           flex-wrap: wrap;
           gap: 4px;
+          justify-content: flex-start;
         }
         body.is-trends-view #trendsUnitContainer,
         body.is-trends-view #darkModeBtn,
         body.is-trends-view #trendsFilterContainer {
-          flex: 1 1 0;
-          min-width: 0;
+          flex: 0 1 auto;
           order: 1;
         }
-        body.is-trends-view #trendsAverageDisplayMobile {
-          flex: 1 1 0;
-          min-width: 0;
-          order: 0;
+        body.is-trends-view .right-header::after {
+          content: "";
+          flex-basis: 100%;
+          height: 0;
+          order: 2;
         }
-        body.is-trends-view #trendsUnitContainer .btn-filter,
-        body.is-trends-view #darkModeBtn,
-        body.is-trends-view #trendsFilterContainer .btn-filter,
+        body.is-trends-view #trendsTotalDisplay,
         body.is-trends-view #trendsAverageDisplayMobile {
-          width: 100%;
-          padding: 0 2px;
-          font-size: 10.5px;
+          flex: 1 1 calc(50% - 2px);
+          max-width: calc(50% - 2px) !important;
+          min-width: 0;
+          margin-top: 4px !important;
+          font-size: 12px;
+          padding: 0 4px;
           height: 32px;
           display: flex;
-          justify-content: center;
           align-items: center;
+          justify-content: center;
           white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
           box-sizing: border-box;
         }
-        body.is-trends-view #trendsUnitContainer .btn-filter svg,
-        body.is-trends-view #darkModeBtn svg,
-        body.is-trends-view #trendsFilterContainer .btn-filter svg {
-          width: 12px;
-          height: 12px;
-          margin-right: 2px;
-        }
         body.is-trends-view #trendsTotalDisplay {
-          flex: 1 1 100%;
-          order: 2;
-          margin-top: 4px;
+          order: 3;
+        }
+        body.is-trends-view #trendsAverageDisplayMobile {
+          order: 4;
         }
         body.is-trends-view #headerBottomLeft {
           display: none !important;
@@ -1727,27 +1743,6 @@
         body.is-average-view #averageFilterContainer {
           flex: 0 1 auto;
           order: 1;
-        }
-        body.is-average-view #averageUnitContainer .btn-filter,
-        body.is-average-view #darkModeBtn,
-        body.is-average-view #averageFilterContainer .btn-filter {
-          width: auto;
-          padding: 0 10px;
-          font-size: 11px;
-          height: 32px;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          white-space: nowrap;
-          box-sizing: border-box;
-          border-radius: 99px;
-        }
-        body.is-average-view #averageUnitContainer .btn-filter svg,
-        body.is-average-view #darkModeBtn svg,
-        body.is-average-view #averageFilterContainer .btn-filter svg {
-          width: 12px;
-          height: 12px;
-          margin-right: 2px;
         }
         body.is-average-view #headerBottomLeft {
           display: none !important;
@@ -3232,7 +3227,7 @@
                   <path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"></path>
                   <path d="M4 12h16"></path>
                 </svg>
-                単位切替
+                <span class="btn-text">単位切替</span>
               </button>
               <div
                 id="trendsUnitMenu"
@@ -3299,7 +3294,7 @@
                   <path d="M21 16v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-3"></path>
                   <path d="M4 12h16"></path>
                 </svg>
-                単位切替
+                <span class="btn-text">単位切替</span>
               </button>
               <div
                 id="averageUnitMenu"
@@ -3343,6 +3338,7 @@
               onclick="toggleDarkMode()"
             >
               <svg
+                class="icon-light-mode"
                 width="14"
                 height="14"
                 viewBox="0 0 24 24"
@@ -3354,7 +3350,28 @@
               >
                 <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
               </svg>
-              表示切替
+              <svg
+                class="icon-dark-mode"
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+              </svg>
+              <span class="btn-text">表示切替</span>
             </button>
 
             <div class="filter-container" id="calendarFilterContainer">
@@ -3373,7 +3390,7 @@
                     points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"
                   ></polygon>
                 </svg>
-                項目切替
+                <span class="btn-text">項目切替</span>
               </button>
               <div id="filterMenu" class="filter-menu-popup">
                 <div id="filterMenuContent"></div>
@@ -3403,7 +3420,7 @@
                     points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"
                   ></polygon>
                 </svg>
-                項目切替
+                <span class="btn-text">項目切替</span>
               </button>
               <div id="trendsFilterMenu" class="filter-menu-popup">
                 <div id="trendsFilterMenuContent"></div>
@@ -3430,7 +3447,7 @@
                     points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"
                   ></polygon>
                 </svg>
-                項目切替
+                <span class="btn-text">項目切替</span>
               </button>
               <div id="ratioRatioMenu" class="filter-menu-popup">
                 <div id="ratioFilterMenuContent"></div>
@@ -3460,7 +3477,7 @@
                     points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"
                   ></polygon>
                 </svg>
-                項目切替
+                <span class="btn-text">項目切替</span>
               </button>
               <div id="averageFilterMenu" class="filter-menu-popup">
                 <div id="averageFilterMenuContent"></div>
@@ -3486,7 +3503,7 @@
                 <path d="M5 12h14"></path>
                 <path d="M12 5v14"></path>
               </svg>
-              番号登録
+              <span class="btn-text">番号登録</span>
             </button>
 
             <div
@@ -3713,7 +3730,7 @@
                         points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"
                       ></polygon>
                     </svg>
-                    項目切替
+                    <span class="btn-text">項目切替</span>
                   </button>
                   <div id="myPageTodayFilterMenu" class="filter-menu-popup">
                     <div id="myPageTodayFilterMenuContent"></div>
@@ -3780,7 +3797,7 @@
                         points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"
                       ></polygon>
                     </svg>
-                    項目切替
+                    <span class="btn-text">項目切替</span>
                   </button>
                   <div id="myPageRatioFilterMenu" class="filter-menu-popup">
                     <div id="myPageRatioFilterMenuContent"></div>
@@ -3834,7 +3851,7 @@
                         points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"
                       ></polygon>
                     </svg>
-                    項目切替
+                    <span class="btn-text">項目切替</span>
                   </button>
                   <div id="myPageTrendsFilterMenu" class="filter-menu-popup">
                     <div id="myPageTrendsFilterMenuContent"></div>
@@ -5506,9 +5523,11 @@
                 <td style="text-align: center;">
                     <input type="checkbox" class="safe-used-checkbox" ${item.used ? "checked" : ""} onchange="toggleSafeUsed(${item.id})" title="使用済み">
                 </td>
-                <td style="text-align: center;">
-                    <button class="btn-blue" style="padding: 6px 12px; font-size: 12px; margin-right: 5px; font-weight: bold;" onclick="editSafeData(${item.id})">変更</button>
-                    <button class="btn-red" onclick="deleteSafeData(${item.id})">削除</button>
+                <td style="text-align: center; white-space: nowrap;">
+                    <div style="display: flex; gap: 6px; justify-content: center; align-items: center;">
+                        <button class="btn-blue" style="padding: 6px 12px; font-size: 12px; font-weight: bold;" onclick="editSafeData(${item.id})">変更</button>
+                        <button class="btn-red" onclick="deleteSafeData(${item.id})">削除</button>
+                    </div>
                 </td>
             </tr>`;
         });
