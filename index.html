@@ -1907,8 +1907,32 @@
           font-size: 12px;
           padding: 3px 5px;
         }
+        .fc .fc-daygrid-day-top {
+          flex-direction: row !important;
+        }
+        .fc-day-sun .fc-daygrid-day-number {
+          color: #e53e3e !important;
+        }
+        .fc-day-sat .fc-daygrid-day-number {
+          color: #3182ce !important;
+        }
+        body.dark-mode .fc-day-sun .fc-daygrid-day-number {
+          color: #fc8181 !important;
+        }
+        body.dark-mode .fc-day-sat .fc-daygrid-day-number {
+          color: #63b3ed !important;
+        }
         .fc-daygrid-day-frame {
           min-height: 46px !important;
+        }
+        .fc .fc-scrollgrid,
+        .fc .fc-scrollgrid td,
+        .fc .fc-scrollgrid th,
+        .fc-theme-standard td,
+        .fc-theme-standard th,
+        .fc-theme-standard .fc-scrollgrid {
+          border-left: none !important;
+          border-right: none !important;
         }
         .fc-event,
         .fc-event-main,
@@ -4538,6 +4562,12 @@
             left: "prev,next today",
             center: "title",
             right: "",
+          },
+          dayCellContent: function(arg) {
+            if (window.innerWidth <= 768) {
+              return arg.dayNumberText.replace('日', '');
+            }
+            return arg.dayNumberText;
           },
           dateClick: function (info) {
             openModal(info.dateStr);
