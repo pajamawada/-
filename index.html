@@ -4822,6 +4822,10 @@
           safe: loadSafeData(),
           profile: loadProfile(),
           darkmode: localStorage.getItem("my_revenue_darkmode") || "disabled",
+          calendarFirstDay: localStorage.getItem("calendarFirstDay") || "0",
+          calendarHeatmap: localStorage.getItem("calendarHeatmap") || "false",
+          syncUrl: localStorage.getItem("my_revenue_sync_script_url") || "",
+          syncToken: localStorage.getItem("my_revenue_sync_token") || "",
         };
       }
 
@@ -4838,6 +4842,18 @@
             "dark-mode",
             backup.darkmode === "enabled",
           );
+        }
+        if (backup.calendarFirstDay !== undefined) {
+          localStorage.setItem("calendarFirstDay", backup.calendarFirstDay);
+        }
+        if (backup.calendarHeatmap !== undefined) {
+          localStorage.setItem("calendarHeatmap", backup.calendarHeatmap);
+        }
+        if (backup.syncUrl !== undefined) {
+          localStorage.setItem("my_revenue_sync_script_url", backup.syncUrl);
+        }
+        if (backup.syncToken !== undefined) {
+          localStorage.setItem("my_revenue_sync_token", backup.syncToken);
         }
       }
 
