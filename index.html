@@ -3413,18 +3413,20 @@
           </button>
         </div>
         <div style="display: flex; flex-direction: column; gap: 15px">
-          <div>
-            <label
-              style="
-                font-size: 14px;
-                font-weight: bold;
-                color: #4a5568;
-                margin-bottom: 5px;
-                display: block;
-              "
-              class="safe-label"
-              >背景画像 (バナー)</label
-            >
+          <div style="margin-bottom: 15px">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+              <label
+                style="
+                  font-size: 14px;
+                  font-weight: bold;
+                  color: #4a5568;
+                  display: block;
+                "
+                class="safe-label"
+                >背景画像 (バナー)</label
+              >
+              <button class="btn-red" style="padding: 4px 8px; font-size: 11px;" onclick="clearProfileImage('banner')">画像をクリア</button>
+            </div>
             <input
               type="file"
               id="settingBannerInput"
@@ -3435,18 +3437,20 @@
               ※選択しない場合は変更されません
             </div>
           </div>
-          <div>
-            <label
-              style="
-                font-size: 14px;
-                font-weight: bold;
-                color: #4a5568;
-                margin-bottom: 5px;
-                display: block;
-              "
-              class="safe-label"
-              >アイコン画像</label
-            >
+          <div style="margin-bottom: 15px">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+              <label
+                style="
+                  font-size: 14px;
+                  font-weight: bold;
+                  color: #4a5568;
+                  display: block;
+                "
+                class="safe-label"
+                >アイコン画像</label
+              >
+              <button class="btn-red" style="padding: 4px 8px; font-size: 11px;" onclick="clearProfileImage('icon')">画像をクリア</button>
+            </div>
             <input
               type="file"
               id="settingIconInput"
@@ -6020,6 +6024,22 @@
         else iconEl.style.backgroundImage = "none";
 
         nameEl.textContent = profile.name || "ゲスト";
+      }
+
+      function clearProfileImage(type) {
+        if (confirm(`${type === 'banner' ? 'バナー' : 'アイコン'}画像を初期状態に戻しますか？`)) {
+          const profile = loadProfile();
+          if (type === 'banner') {
+            profile.banner = "";
+            document.getElementById("settingBannerInput").value = "";
+          } else if (type === 'icon') {
+            profile.icon = "";
+            document.getElementById("settingIconInput").value = "";
+          }
+          saveProfile(profile);
+          renderMyPage();
+          showToast("画像を初期状態に戻しました", "success");
+        }
       }
 
       function openMyPageSettings() {
