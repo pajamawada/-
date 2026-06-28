@@ -339,14 +339,41 @@
         display: block;
       }
 
+      .fc-daygrid-bg-harness {
+        top: 0 !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+      }
       .fc-bg-event {
         opacity: 1 !important;
+        border-radius: 0 !important;
+        margin: 0 !important;
+        pointer-events: none !important;
+      }
+      
+      /* ヒートマップが濃い場合の文字色調整 */
+      .fc-daygrid-day.heatmap-dark-bg .fc-daygrid-day-number,
+      .fc-daygrid-day.heatmap-dark-bg .fc-event,
+      .fc-daygrid-day.heatmap-dark-bg .fc-event-main,
+      .fc-daygrid-day.heatmap-dark-bg .fc-event-title,
+      .fc-daygrid-day.heatmap-dark-bg .fc-daygrid-event,
+      .fc-daygrid-day.heatmap-dark-bg .fc-daygrid-event a {
+        color: #ffffff !important;
+      }
+      body.dark-mode .fc-daygrid-day.heatmap-dark-bg .fc-daygrid-day-number,
+      body.dark-mode .fc-daygrid-day.heatmap-dark-bg .fc-event,
+      body.dark-mode .fc-daygrid-day.heatmap-dark-bg .fc-event-main,
+      body.dark-mode .fc-daygrid-day.heatmap-dark-bg .fc-event-title,
+      body.dark-mode .fc-daygrid-day.heatmap-dark-bg .fc-daygrid-event,
+      body.dark-mode .fc-daygrid-day.heatmap-dark-bg .fc-daygrid-event a {
+        color: #ffffff !important;
       }
 
       .fc-event,
       .fc-event-main,
       .fc-event-title,
-      .fc-daygrid-event,
+      .fc-daygrid-event:not(.fc-bg-event),
       .fc-daygrid-event a {
         background-color: transparent !important;
         border: none !important;
@@ -360,7 +387,7 @@
         width: 100% !important;
       }
       @media (hover: hover) and (pointer: fine) {
-        .fc-event:hover {
+        .fc-event:not(.fc-bg-event):hover {
           background-color: rgba(49, 130, 206, 0.12) !important;
           border-radius: 6px !important;
         }
@@ -372,9 +399,65 @@
         .fc-daygrid-day:hover {
           background-color: #f7fafc;
         }
+        .fc-daygrid-day[style*="background-color"]:hover {
+          filter: brightness(0.95);
+        }
       }
       .fc-daygrid-day-frame {
         min-height: 60px !important;
+      }
+
+      /* ================= iOS風トグルスイッチ ================= */
+      .toggle-switch {
+        position: relative;
+        display: inline-flex;
+        width: 48px;
+        height: 26px;
+        flex-shrink: 0;
+        vertical-align: middle;
+      }
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #cbd5e0;
+        transition: 0.3s;
+        border-radius: 26px;
+      }
+      .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 22px;
+        width: 22px;
+        left: 2px;
+        bottom: 2px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+      }
+      input:checked + .toggle-slider {
+        background-color: #38a169;
+      }
+      input:focus-visible + .toggle-slider {
+        box-shadow: 0 0 0 3px rgba(56, 161, 105, 0.3);
+      }
+      input:checked + .toggle-slider:before {
+        transform: translateX(22px);
+      }
+      body.dark-mode .toggle-slider {
+        background-color: #4a5568;
+      }
+      body.dark-mode input:checked + .toggle-slider {
+        background-color: #4fd1c5;
       }
 
       /* ================= ナビゲーションメニュー ================= */
@@ -1180,6 +1263,9 @@
       @media (hover: hover) and (pointer: fine) {
         body.dark-mode .fc-daygrid-day:hover {
           background-color: #4a5568;
+        }
+        body.dark-mode .fc-daygrid-day[style*="background-color"]:hover {
+          filter: brightness(1.2);
         }
       }
       body.dark-mode .fc-day-other {
@@ -2947,7 +3033,7 @@
             style="
               display: flex;
               align-items: center;
-              gap: 8px;
+              gap: 12px;
               font-size: 14px;
               font-weight: bold;
               color: #4a5568;
@@ -2956,12 +3042,11 @@
             "
             class="safe-label"
           >
-            <input
-              type="checkbox"
-              id="calendarHeatmapCheckbox"
-              class="safe-used-checkbox"
-            />
-            収益ヒートマップを表示する
+            <label class="toggle-switch">
+              <input type="checkbox" id="calendarHeatmapCheckbox" />
+              <span class="toggle-slider"></span>
+            </label>
+            <span>収益ヒートマップを表示する</span>
           </label>
           <button class="btn-blue btn-submit" onclick="saveCalendarSettings()">
             保存
@@ -3279,7 +3364,7 @@
             style="
               display: flex;
               align-items: center;
-              gap: 8px;
+              gap: 12px;
               font-size: 14px;
               font-weight: bold;
               color: #4a5568;
@@ -3287,12 +3372,11 @@
             "
             class="safe-label"
           >
-            <input
-              type="checkbox"
-              id="safeUsedInput"
-              class="safe-used-checkbox"
-            />
-            使用済みとして登録
+            <label class="toggle-switch">
+              <input type="checkbox" id="safeUsedInput" />
+              <span class="toggle-slider"></span>
+            </label>
+            <span>使用済みとして登録</span>
           </label>
           <button class="btn-blue btn-submit" onclick="saveSafeData()">
             保存
@@ -3441,7 +3525,7 @@
               style="
                 display: flex;
                 align-items: center;
-                gap: 8px;
+                gap: 12px;
                 font-size: 14px;
                 font-weight: bold;
                 color: #4a5568;
@@ -3449,17 +3533,11 @@
               "
               class="safe-label"
             >
-              <input
-                type="checkbox"
-                id="settingMaskModeInput"
-                style="
-                  width: 18px;
-                  height: 18px;
-                  cursor: pointer;
-                  accent-color: #38a169;
-                "
-              />
-              覆面モード（項目名・グループ名を伏字にする）
+              <label class="toggle-switch">
+                <input type="checkbox" id="settingMaskModeInput" />
+                <span class="toggle-slider"></span>
+              </label>
+              <span>覆面モード（項目名・グループ名を伏字にする）</span>
             </label>
             <div style="font-size: 11px; color: #718096; margin-top: 4px">
               ※有効にするとすべての画面で項目名とグループ名が伏字になります
@@ -4776,16 +4854,20 @@
       }
 
       function openBackupModal() {
-        if (document.getElementById("sidebar").classList.contains("open"))
-          toggleSidebar();
-        document.getElementById("backupModal").style.display = "flex";
-        if (typeof loadCloudSyncSettingsToUI === "function")
-          loadCloudSyncSettingsToUI();
-        if (typeof updateCloudSyncUI === "function") updateCloudSyncUI();
+        transitionView(() => {
+          if (document.getElementById("sidebar").classList.contains("open"))
+            toggleSidebar();
+          document.getElementById("backupModal").style.display = "flex";
+          if (typeof loadCloudSyncSettingsToUI === "function")
+            loadCloudSyncSettingsToUI();
+          if (typeof updateCloudSyncUI === "function") updateCloudSyncUI();
+        });
       }
 
       function closeBackupModal() {
-        document.getElementById("backupModal").style.display = "none";
+        transitionView(() => {
+          document.getElementById("backupModal").style.display = "none";
+        });
       }
 
       function exportDataJSON() {
@@ -5151,6 +5233,7 @@
           },
           datesSet: function () {
             updateMonthlyTotal();
+            setTimeout(() => applyHeatmapToDOM(), 0);
           },
         });
         calendar.render();
@@ -5287,15 +5370,19 @@
       }
 
       function openCalendarSettingsModal() {
-        const firstDay = localStorage.getItem("calendarFirstDay") || "0";
-        document.getElementById("calendarFirstDaySelect").value = firstDay;
-        const heatmap = localStorage.getItem("calendarHeatmap") === "true";
-        document.getElementById("calendarHeatmapCheckbox").checked = heatmap;
-        document.getElementById("calendarSettingsModal").style.display = "flex";
+        transitionView(() => {
+          const firstDay = localStorage.getItem("calendarFirstDay") || "0";
+          document.getElementById("calendarFirstDaySelect").value = firstDay;
+          const heatmap = localStorage.getItem("calendarHeatmap") === "true";
+          document.getElementById("calendarHeatmapCheckbox").checked = heatmap;
+          document.getElementById("calendarSettingsModal").style.display = "flex";
+        });
       }
 
       function closeCalendarSettingsModal() {
-        document.getElementById("calendarSettingsModal").style.display = "none";
+        transitionView(() => {
+          document.getElementById("calendarSettingsModal").style.display = "none";
+        });
       }
 
       function saveCalendarSettings() {
@@ -5314,8 +5401,18 @@
         refreshCalendar();
       }
 
+      // ================= 画面切り替え共通関数 (View Transitions API) =================
+      function transitionView(updateDOM) {
+        if (!document.startViewTransition) {
+          updateDOM();
+          return;
+        }
+        document.startViewTransition(updateDOM);
+      }
+
       function showCalendarView() {
-        document.body.classList.remove("is-trends-view", "is-average-view");
+        transitionView(() => {
+          document.body.classList.remove("is-trends-view", "is-average-view");
         updateBottomNavActive("calendar");
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
@@ -5354,10 +5451,12 @@
             calendar.updateSize();
           }, 50);
         }
+        });
       }
 
       function showTrendsView() {
-        document.body.classList.remove("is-average-view");
+        transitionView(() => {
+          document.body.classList.remove("is-average-view");
         document.body.classList.add("is-trends-view");
         updateBottomNavActive("trends");
         if (document.getElementById("sidebar").classList.contains("open"))
@@ -5396,10 +5495,12 @@
         setTimeout(() => {
           renderTrendsChart(true);
         }, 100);
+        });
       }
 
       function showRatioView() {
-        document.body.classList.remove("is-trends-view", "is-average-view");
+        transitionView(() => {
+          document.body.classList.remove("is-trends-view", "is-average-view");
         updateBottomNavActive("ratio");
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
@@ -5435,10 +5536,12 @@
 
         renderRatioFilterMenu();
         renderRatioChart();
+        });
       }
 
       function showAverageView() {
-        document.body.classList.remove("is-trends-view");
+        transitionView(() => {
+          document.body.classList.remove("is-trends-view");
         document.body.classList.add("is-average-view");
         updateBottomNavActive("average");
         if (document.getElementById("sidebar").classList.contains("open"))
@@ -5484,11 +5587,13 @@
         setTimeout(() => {
           renderAverageCharts();
         }, 100);
+        });
       }
 
       /* --- 金庫画面の表示 --- */
       function showSafeView() {
-        document.body.classList.remove("is-trends-view", "is-average-view");
+        transitionView(() => {
+          document.body.classList.remove("is-trends-view", "is-average-view");
         updateBottomNavActive("safe");
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
@@ -5524,11 +5629,13 @@
         document.getElementById("btnSafeRegister").style.display = "flex";
 
         renderSafeTable();
+        });
       }
 
       /* --- マイページの表示 --- */
       function showMyPageView() {
-        document.body.classList.remove("is-trends-view", "is-average-view");
+        transitionView(() => {
+          document.body.classList.remove("is-trends-view", "is-average-view");
         updateBottomNavActive("mypage");
         if (document.getElementById("sidebar").classList.contains("open"))
           toggleSidebar();
@@ -5570,6 +5677,7 @@
         setTimeout(() => {
           renderMyPageCharts();
         }, 100);
+        });
       }
 
       function renderMyPageCharts() {
@@ -5899,27 +6007,31 @@
       }
 
       function openMyPageSettings() {
-        const profile = loadProfile();
-        document.getElementById("settingBannerInput").value = "";
-        document.getElementById("settingIconInput").value = "";
-        document.getElementById("settingNameInput").value = profile.name || "";
-        document.getElementById("settingPasswordInput").value =
-          profile.password || "";
-        document.getElementById("settingMaskModeInput").checked =
-          profile.maskMode || false;
+        transitionView(() => {
+          const profile = loadProfile();
+          document.getElementById("settingBannerInput").value = "";
+          document.getElementById("settingIconInput").value = "";
+          document.getElementById("settingNameInput").value = profile.name || "";
+          document.getElementById("settingPasswordInput").value =
+            profile.password || "";
+          document.getElementById("settingMaskModeInput").checked =
+            profile.maskMode || false;
 
-        // 目のアイコンとパスワード表示状態をリセット
-        document.getElementById("settingPasswordInput").type = "password";
-        const btn = document.getElementById("myPagePasswordEyeBtn");
-        if (btn) {
-          btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
-        }
+          // 目のアイコンとパスワード表示状態をリセット
+          document.getElementById("settingPasswordInput").type = "password";
+          const btn = document.getElementById("myPagePasswordEyeBtn");
+          if (btn) {
+            btn.innerHTML = `<svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+          }
 
-        document.getElementById("myPageSettingsModal").style.display = "flex";
+          document.getElementById("myPageSettingsModal").style.display = "flex";
+        });
       }
 
       function closeMyPageSettings() {
-        document.getElementById("myPageSettingsModal").style.display = "none";
+        transitionView(() => {
+          document.getElementById("myPageSettingsModal").style.display = "none";
+        });
       }
 
       function readFileAsDataURL(file) {
@@ -6023,21 +6135,25 @@
 
       /* --- 金庫 モーダル操作・保存・削除・編集 --- */
       function openSafeModal() {
-        resetModalEye();
-        editingSafeId = null;
-        document.getElementById("safeDateInput").value = new Date()
-          .toISOString()
-          .split("T")[0];
-        document.getElementById("safeNameInput").value = "";
-        document.getElementById("safeCodeInput").value = "";
-        document.getElementById("safeAmountInput").value = "";
-        document.getElementById("safeUsedInput").checked = false;
-        document.getElementById("safeModal").style.display = "flex";
+        transitionView(() => {
+          resetModalEye();
+          editingSafeId = null;
+          document.getElementById("safeDateInput").value = new Date()
+            .toISOString()
+            .split("T")[0];
+          document.getElementById("safeNameInput").value = "";
+          document.getElementById("safeCodeInput").value = "";
+          document.getElementById("safeAmountInput").value = "";
+          document.getElementById("safeUsedInput").checked = false;
+          document.getElementById("safeModal").style.display = "flex";
+        });
       }
 
       function closeSafeModal() {
-        document.getElementById("safeModal").style.display = "none";
-        editingSafeId = null;
+        transitionView(() => {
+          document.getElementById("safeModal").style.display = "none";
+          editingSafeId = null;
+        });
       }
 
       function editSafeData(id) {
@@ -6190,44 +6306,48 @@
       }
 
       function openWorkModal(viewType) {
-        toggleSidebar();
-        document
-          .querySelectorAll(".work-view")
-          .forEach((v) => v.classList.remove("active"));
-        const titleEl = document.getElementById("workModalTitle");
+        transitionView(() => {
+          toggleSidebar();
+          document
+            .querySelectorAll(".work-view")
+            .forEach((v) => v.classList.remove("active"));
+          const titleEl = document.getElementById("workModalTitle");
 
-        if (viewType === "projects") {
-          titleEl.innerHTML =
-            '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg> グループ・項目の登録</span>';
-          document.getElementById("view-projects").classList.add("active");
-          updateGroupDropdowns();
-          renderProjectsList();
-        } else if (viewType === "goals") {
-          titleEl.innerHTML =
-            '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg> 目標金額の設定</span>';
-          document.getElementById("view-goals").classList.add("active");
-          if (!document.getElementById("goalMonthSelect").value) {
-            document.getElementById("goalMonthSelect").value = new Date()
-              .toISOString()
-              .slice(0, 7);
+          if (viewType === "projects") {
+            titleEl.innerHTML =
+              '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg> グループ・項目の登録</span>';
+            document.getElementById("view-projects").classList.add("active");
+            updateGroupDropdowns();
+            renderProjectsList();
+          } else if (viewType === "goals") {
+            titleEl.innerHTML =
+              '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg> 目標金額の設定</span>';
+            document.getElementById("view-goals").classList.add("active");
+            if (!document.getElementById("goalMonthSelect").value) {
+              document.getElementById("goalMonthSelect").value = new Date()
+                .toISOString()
+                .slice(0, 7);
+            }
+            loadGoalForMonth();
+          } else if (viewType === "monthly") {
+            titleEl.innerHTML =
+              '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg> 項目ごとの一括入力</span>';
+            document.getElementById("view-monthly").classList.add("active");
+            updateProjectDropdownForMonthly();
+            renderMonthlyDays();
+          } else if (viewType === "daily") {
+            titleEl.innerHTML =
+              '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> 各日の一括入力</span>';
+            document.getElementById("view-daily").classList.add("active");
+            renderDailyFields();
           }
-          loadGoalForMonth();
-        } else if (viewType === "monthly") {
-          titleEl.innerHTML =
-            '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg> 項目ごとの一括入力</span>';
-          document.getElementById("view-monthly").classList.add("active");
-          updateProjectDropdownForMonthly();
-          renderMonthlyDays();
-        } else if (viewType === "daily") {
-          titleEl.innerHTML =
-            '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> 各日の一括入力</span>';
-          document.getElementById("view-daily").classList.add("active");
-          renderDailyFields();
-        }
-        document.getElementById("workModal").style.display = "flex";
+          document.getElementById("workModal").style.display = "flex";
+        });
       }
       function closeWorkModal() {
-        document.getElementById("workModal").style.display = "none";
+        transitionView(() => {
+          document.getElementById("workModal").style.display = "none";
+        });
       }
 
       function toggleFilterMenu(e) {
@@ -6972,21 +7092,11 @@
                 start: dateStr,
                 allDay: true,
               });
-
-              if (heatmap && maxTotal > 0) {
-                const ratio = dayTotal / maxTotal;
-                const alpha = Math.min(1, 0.2 + ratio * 0.8);
-                calendar.addEvent({
-                  start: dateStr,
-                  allDay: true,
-                  display: "background",
-                  backgroundColor: `rgba(56, 161, 105, ${alpha})`,
-                });
-              }
             }
           }
         }
         updateMonthlyTotal();
+        setTimeout(() => applyHeatmapToDOM(), 0);
       }
 
       function updateCalendarHeaderProgress() {
@@ -7074,6 +7184,54 @@
           }
         }
         element.animationId = requestAnimationFrame(update);
+      }
+
+      function applyHeatmapToDOM() {
+        const heatmap = localStorage.getItem("calendarHeatmap") === "true";
+        const data = loadData();
+        const activeProjs = getActiveProjects("filter-cb-proj");
+
+        let maxTotal = 0;
+        if (heatmap) {
+          for (const dateStr in data) {
+            const list = data[dateStr];
+            if (list && list.length > 0) {
+              const dayTotal = list.reduce((sum, item) => {
+                return activeProjs.includes(item.name) ? sum + item.amount : sum;
+              }, 0);
+              if (dayTotal > maxTotal) maxTotal = dayTotal;
+            }
+          }
+        }
+
+        document.querySelectorAll('.fc-daygrid-day').forEach(dayEl => {
+          const dateStr = dayEl.getAttribute('data-date');
+          if (!dateStr) return;
+          
+          let alpha = 0;
+          if (heatmap && maxTotal > 0 && data[dateStr]) {
+            const list = data[dateStr];
+            const dayTotal = list.reduce((sum, item) => {
+              return activeProjs.includes(item.name) ? sum + item.amount : sum;
+            }, 0);
+            if (dayTotal > 0) {
+              const ratio = dayTotal / maxTotal;
+              alpha = Math.min(1, 0.2 + ratio * 0.8);
+            }
+          }
+          
+          if (alpha > 0) {
+            dayEl.style.backgroundColor = `rgba(56, 161, 105, ${alpha})`;
+            if (alpha > 0.45) {
+              dayEl.classList.add("heatmap-dark-bg");
+            } else {
+              dayEl.classList.remove("heatmap-dark-bg");
+            }
+          } else {
+            dayEl.style.backgroundColor = "";
+            dayEl.classList.remove("heatmap-dark-bg");
+          }
+        });
       }
 
       function updateMonthlyTotal() {
