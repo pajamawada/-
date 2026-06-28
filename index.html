@@ -3619,7 +3619,13 @@
       <div class="header-wrapper">
         <div class="header-top">
           <div class="left-header">
-            <button class="menu-btn" onclick="toggleSidebar()">&#9776;</button>
+            <button class="menu-btn" onclick="toggleSidebar()">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block;">
+                <line x1="3" y1="12" x2="21" y2="12"></line>
+                <line x1="3" y1="6" x2="21" y2="6"></line>
+                <line x1="3" y1="18" x2="21" y2="18"></line>
+              </svg>
+            </button>
             <h1 class="title">収益管理カレンダー</h1>
           </div>
           <div class="right-header">
@@ -8716,15 +8722,31 @@
       const ptrIndicator = document.getElementById("ptrIndicator");
       const ptrSpinner = document.getElementById("ptrSpinner");
 
+      function isAtTopOfScrollable(element) {
+        let el = element;
+        while (el && el !== document.body && el !== document.documentElement) {
+          if (el.nodeType === Node.ELEMENT_NODE) {
+            const style = window.getComputedStyle(el);
+            if (style.overflowY === "auto" || style.overflowY === "scroll") {
+              if (el.scrollTop > 0) return false;
+            }
+          }
+          el = el.parentElement;
+        }
+        return window.scrollY === 0;
+      }
+
       document.body.addEventListener(
         "touchstart",
         function (e) {
           if (e.changedTouches && e.changedTouches.length > 0) {
             swipeStartX = e.changedTouches[0].screenX;
             swipeStartY = e.changedTouches[0].screenY;
-            if (window.scrollY === 0) {
+            if (isAtTopOfScrollable(e.target)) {
               isPulling = true;
               document.body.classList.remove("pull-transition");
+            } else {
+              isPulling = false;
             }
           }
         },
@@ -8743,8 +8765,7 @@
 
             if (
               deltaY > 0 &&
-              Math.abs(deltaY) > Math.abs(deltaX) &&
-              window.scrollY === 0
+              Math.abs(deltaY) > Math.abs(deltaX)
             ) {
               const pullDistance = Math.min(deltaY * 0.4, 70); // stop at ~70px
               document.documentElement.style.setProperty(
@@ -8773,7 +8794,7 @@
               document.body.classList.add("pull-transition");
               document.documentElement.style.setProperty("--pull-y", `0px`);
 
-              if (deltaY > 120 && window.scrollY === 0) {
+              if (deltaY > 120) {
                 ptrSpinner.classList.add("spinning");
                 triggerHaptic("medium");
 
