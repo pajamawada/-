@@ -339,6 +339,10 @@
         display: block;
       }
 
+      .fc-bg-event {
+        opacity: 1 !important;
+      }
+
       .fc-event,
       .fc-event-main,
       .fc-event-title,
@@ -1521,51 +1525,6 @@
         border-color: #4a5568;
       }
 
-      /* ================= 目標達成お祝い ================= */
-      #celebrationOverlay {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 2000;
-        pointer-events: none;
-        justify-content: center;
-        align-items: center;
-      }
-      #celebrationOverlay.active {
-        display: flex;
-      }
-      .celebration-message {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: #fff;
-        padding: 30px 50px;
-        border-radius: 20px;
-        font-size: 28px;
-        font-weight: bold;
-        text-align: center;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        animation: celebrationPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      }
-      .celebration-message small {
-        display: block;
-        font-size: 16px;
-        margin-top: 8px;
-        font-weight: normal;
-        opacity: 0.9;
-      }
-      @keyframes celebrationPop {
-        0% {
-          transform: scale(0.3);
-          opacity: 0;
-        }
-        100% {
-          transform: scale(1);
-          opacity: 1;
-        }
-      }
-
       @media (min-width: 769px) {
         #trendsAverageDisplayMobile {
           display: none !important;
@@ -2409,8 +2368,10 @@
           bottom: 0;
           left: 0;
           width: 100%;
-          background: #ffffff;
-          box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+          background: rgba(255, 255, 255, 0.75);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.06);
           z-index: 1000;
           justify-content: space-around;
           padding-bottom: env(safe-area-inset-bottom);
@@ -2420,9 +2381,11 @@
             border-color 0.3s;
         }
         body.dark-mode .bottom-nav {
-          background: #2d3748;
-          border-top: 1px solid #4a5568;
-          box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+          background: rgba(45, 55, 72, 0.75);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border-top: 1px solid rgba(255, 255, 255, 0.05);
+          box-shadow: 0 -4px 24px rgba(0, 0, 0, 0.4);
         }
         .bottom-nav-item {
           background: none;
@@ -2466,9 +2429,227 @@
       #myPageView {
         animation: viewFadeInDramatic 0.6s cubic-bezier(0.16, 1, 0.3, 1);
       }
+
+      /* ================= UI/UX 超絶改善 ================= */
+      /* 1. マイクロインタラクションとアニメーション */
+      button {
+        transition:
+          transform 0.15s ease,
+          background-color 0.2s,
+          box-shadow 0.2s !important;
+      }
+      button:active {
+        transform: scale(0.92) !important;
+      }
+      .work-view.active,
+      #calendarView {
+        animation: viewFadeInDramatic 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      }
+
+      /* 2. カード・モーダルの近代化 (角丸・シャドウ) */
+      .work-modal-content {
+        border-radius: 24px !important;
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.12) !important;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+      }
+      body.dark-mode .work-modal-content {
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5) !important;
+        background-color: #1a202c !important;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .container {
+        border-radius: 24px !important;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.06) !important;
+      }
+      body.dark-mode .container {
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+        background-color: #2d3748 !important;
+      }
+
+      /* 5. フローティングアクションボタン (FAB) */
+      .quick-add-fab {
+        position: absolute;
+        right: 20px;
+        bottom: 20px;
+        width: 48px;
+        height: 48px;
+        background: linear-gradient(135deg, #4299e1, #3182ce);
+        color: white;
+        border-radius: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 8px 24px rgba(66, 153, 225, 0.4);
+        cursor: pointer;
+        z-index: 100;
+        border: none;
+      }
+      @media (min-width: 769px) {
+        .quick-add-fab {
+          display: none;
+        }
+      }
+      body.dark-mode .quick-add-fab {
+        background: linear-gradient(135deg, #63b3ed, #4299e1);
+        box-shadow: 0 8px 24px rgba(99, 179, 237, 0.4);
+      }
+      /* 3. スケルトンローディング */
+      .skeleton-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        z-index: 9998;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        transition: opacity 0.3s;
+        pointer-events: none;
+      }
+      body.dark-mode .skeleton-overlay {
+        background: #1a202c;
+      }
+      .skeleton-overlay.hidden {
+        opacity: 0;
+      }
+      .skeleton-box {
+        background: #e2e8f0;
+        border-radius: 8px;
+        animation: pulse 1.5s infinite ease-in-out;
+      }
+      body.dark-mode .skeleton-box {
+        background: #2d3748;
+      }
+      @keyframes pulse {
+        0% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+        100% {
+          opacity: 1;
+        }
+      }
+
+      /* 5. トースト/スナックバー */
+      .toast-notification {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%) translateY(100px);
+        background: rgba(45, 55, 72, 0.95);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 999px;
+        font-size: 14px;
+        font-weight: bold;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        z-index: 9999;
+        opacity: 0;
+        transition:
+          transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+          opacity 0.3s;
+        pointer-events: none;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+      }
+      .toast-notification.show {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+      }
+      body.dark-mode .toast-notification {
+        background: rgba(255, 255, 255, 0.95);
+        color: #1a202c;
+      }
+
+      /* 1. Pull to Refresh Indicator (Spinner) */
+      .ptr-indicator {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 9999;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 0.2s;
+      }
+      .ptr-indicator.visible {
+        opacity: 1;
+      }
+      .ptr-spinner {
+        width: 20px;
+        height: 20px;
+        border: 2px solid rgba(0, 0, 0, 0.1);
+        border-top-color: #a0aec0;
+        border-radius: 50%;
+        transition: transform 0.1s;
+      }
+      body.dark-mode .ptr-spinner {
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-top-color: #e2e8f0;
+      }
+      .ptr-spinner.spinning {
+        animation: ptr-spin 0.8s linear infinite;
+      }
+      @keyframes ptr-spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .container {
+        transform: translateY(var(--pull-y, 0px));
+      }
+      .pull-transition .container {
+        transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
     </style>
   </head>
   <body>
+    <!-- Pull to Refresh Indicator -->
+    <div id="ptrIndicator" class="ptr-indicator">
+      <div id="ptrSpinner" class="ptr-spinner"></div>
+    </div>
+
+    <!-- Skeleton Loading -->
+    <div id="skeletonOverlay" class="skeleton-overlay">
+      <div
+        class="skeleton-box"
+        style="height: 40px; width: 60%; margin-bottom: 20px"
+      ></div>
+      <div
+        class="skeleton-box"
+        style="height: 100px; width: 100%; margin-bottom: 20px"
+      ></div>
+      <div
+        style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px"
+      >
+        <div class="skeleton-box" style="height: 60px"></div>
+        <div class="skeleton-box" style="height: 60px"></div>
+        <div class="skeleton-box" style="height: 60px"></div>
+        <div class="skeleton-box" style="height: 60px"></div>
+        <div class="skeleton-box" style="height: 60px"></div>
+        <div class="skeleton-box" style="height: 60px"></div>
+        <div class="skeleton-box" style="height: 60px"></div>
+
+        <div class="skeleton-box" style="height: 60px"></div>
+        <div class="skeleton-box" style="height: 60px"></div>
+        <div class="skeleton-box" style="height: 60px"></div>
+        <div class="skeleton-box" style="height: 60px"></div>
+        <div class="skeleton-box" style="height: 60px"></div>
+        <div class="skeleton-box" style="height: 60px"></div>
+        <div class="skeleton-box" style="height: 60px"></div>
+      </div>
+    </div>
+
     <div
       class="sidebar-overlay"
       id="sidebarOverlay"
@@ -2729,28 +2910,112 @@
       </ul>
     </div>
 
-    <div id="celebrationOverlay">
-      <div class="celebration-message">
-        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 4px;">
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.53 10.15 16 9.07C16.89 8.35 17.5 7.4 17.5 6a3 3 0 0 0-3-3c-1.39 0-2.35.61-3.08 1.5l-1.12 1.43"></path><path d="M9.47 13.85 8 14.93C7.11 15.65 6.5 16.6 6.5 18a3 3 0 0 0 3 3c1.39 0 2.35-.61 3.08-1.5l1.12-1.43"></path><path d="M12 12 9 9"></path><path d="M15 15l3 3"></path><path d="M14.5 14.5l-3-3"></path><path d="M9.5 9.5l3 3"></path><circle cx="12" cy="12" r="2"></circle></svg>
-          <span>目標達成おめでとう！</span>
-          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.53 10.15 16 9.07C16.89 8.35 17.5 7.4 17.5 6a3 3 0 0 0-3-3c-1.39 0-2.35.61-3.08 1.5l-1.12 1.43"></path><path d="M9.47 13.85 8 14.93C7.11 15.65 6.5 16.6 6.5 18a3 3 0 0 0 3 3c1.39 0 2.35-.61 3.08-1.5l1.12-1.43"></path><path d="M12 12 9 9"></path><path d="M15 15l3 3"></path><path d="M14.5 14.5l-3-3"></path><path d="M9.5 9.5l3 3"></path><circle cx="12" cy="12" r="2"></circle></svg>
+    <div class="work-modal-overlay" id="calendarSettingsModal">
+      <div class="work-modal-content" style="max-width: 400px">
+        <div class="work-modal-header">
+          <h3 class="work-modal-title">カレンダー設定</h3>
+          <button class="close-btn" onclick="closeCalendarSettingsModal()">
+            &times;
+          </button>
         </div>
-        <small>今月の目標金額を達成しました！</small>
+        <div>
+          <label
+            style="
+              font-size: 14px;
+              font-weight: bold;
+              color: #4a5568;
+              margin-bottom: 5px;
+              display: block;
+            "
+            class="safe-label"
+            >開始曜日</label
+          >
+          <select
+            id="calendarFirstDaySelect"
+            style="width: 100%; margin-bottom: 20px"
+          >
+            <option value="0">日曜日</option>
+            <option value="1">月曜日</option>
+            <option value="2">火曜日</option>
+            <option value="3">水曜日</option>
+            <option value="4">木曜日</option>
+            <option value="5">金曜日</option>
+            <option value="6">土曜日</option>
+          </select>
+
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              font-size: 14px;
+              font-weight: bold;
+              color: #4a5568;
+              cursor: pointer;
+              margin-bottom: 20px;
+            "
+            class="safe-label"
+          >
+            <input
+              type="checkbox"
+              id="calendarHeatmapCheckbox"
+              class="safe-used-checkbox"
+            />
+            収益ヒートマップを表示する
+          </label>
+          <button class="btn-blue btn-submit" onclick="saveCalendarSettings()">
+            保存
+          </button>
+        </div>
       </div>
     </div>
 
     <div class="work-modal-overlay" id="backupModal">
       <div class="work-modal-content" style="max-width: 520px">
         <div class="work-modal-header">
-          <h3 class="work-modal-title" style="display: flex; align-items: center; gap: 8px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>データのバックアップ・移行</h3>
+          <h3
+            class="work-modal-title"
+            style="display: flex; align-items: center; gap: 8px"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"
+              ></path>
+              <polyline points="17 21 17 13 7 13 7 21"></polyline>
+              <polyline points="7 3 7 8 15 8"></polyline></svg
+            >データのバックアップ・移行
+          </h3>
           <button class="close-btn" onclick="closeBackupModal()">
             &times;
           </button>
         </div>
         <div class="backup-actions">
           <div class="backup-section" id="cloudSyncSection">
-            <h5 style="display: flex; align-items: center; gap: 6px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19a5.5 5.5 0 0 0 1.5-10.7A10 10 0 0 0 6.6 6.6 8 8 0 0 0 4 20h13.5"></path></svg>Google Drive クラウド同期</h5>
+            <h5 style="display: flex; align-items: center; gap: 6px">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M17.5 19a5.5 5.5 0 0 0 1.5-10.7A10 10 0 0 0 6.6 6.6 8 8 0 0 0 4 20h13.5"
+                ></path></svg
+              >Google Drive クラウド同期
+            </h5>
             <p>
               パソコンとスマホでデータを同期します。変更があると自動で Google
               Drive に保存されます。（Google Apps Script 使用・Cloud Console
@@ -2805,7 +3070,22 @@
             <div class="cloud-sync-meta" id="cloudSyncMeta"></div>
           </div>
           <div class="backup-section">
-            <h5 style="display: flex; align-items: center; gap: 6px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>エクスポート（ダウンロード）</h5>
+            <h5 style="display: flex; align-items: center; gap: 6px">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line></svg
+              >エクスポート（ダウンロード）
+            </h5>
             <p>
               現在のデータをファイルに保存します。JSONは完全バックアップ、CSVは表計算ソフトでも開けます。
             </p>
@@ -2819,7 +3099,22 @@
             </div>
           </div>
           <div class="backup-section">
-            <h5 style="display: flex; align-items: center; gap: 6px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>インポート（復元）</h5>
+            <h5 style="display: flex; align-items: center; gap: 6px">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line></svg
+              >インポート（復元）
+            </h5>
             <p>
               保存したファイルからデータを復元します。JSONは全データを上書き、CSVは収益・金庫データを追加します。
             </p>
@@ -2859,7 +3154,27 @@
     <div class="work-modal-overlay" id="safeModal">
       <div class="work-modal-content" style="max-width: 400px">
         <div class="work-modal-header">
-          <h3 class="work-modal-title" style="display: flex; align-items: center; gap: 8px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="20" width="16" height="2"></rect><path d="M12 2 2 8h20L12 2Z"></path><rect x="6" y="10" width="2" height="8"></rect><rect x="16" y="10" width="2" height="8"></rect><rect x="11" y="10" width="2" height="8"></rect></svg>金庫に登録</h3>
+          <h3
+            class="work-modal-title"
+            style="display: flex; align-items: center; gap: 8px"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <rect x="4" y="20" width="16" height="2"></rect>
+              <path d="M12 2 2 8h20L12 2Z"></path>
+              <rect x="6" y="10" width="2" height="8"></rect>
+              <rect x="16" y="10" width="2" height="8"></rect>
+              <rect x="11" y="10" width="2" height="8"></rect></svg
+            >金庫に登録
+          </h3>
           <button class="close-btn" onclick="closeSafeModal()">&times;</button>
         </div>
         <div style="display: flex; flex-direction: column; gap: 15px">
@@ -2989,7 +3304,26 @@
     <div class="work-modal-overlay" id="myPageSettingsModal">
       <div class="work-modal-content" style="max-width: 400px">
         <div class="work-modal-header">
-          <h3 class="work-modal-title" style="display: flex; align-items: center; gap: 8px;"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg>マイページ設定</h3>
+          <h3
+            class="work-modal-title"
+            style="display: flex; align-items: center; gap: 8px"
+          >
+            <svg
+              width="24"
+              height="24"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+              ></path>
+              <circle cx="12" cy="12" r="3"></circle></svg
+            >マイページ設定
+          </h3>
           <button class="close-btn" onclick="closeMyPageSettings()">
             &times;
           </button>
@@ -3146,7 +3480,26 @@
         </div>
 
         <div class="work-view" id="view-projects">
-          <h4 class="section-title" style="display: flex; align-items: center; gap: 6px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg> グループの登録</h4>
+          <h4
+            class="section-title"
+            style="display: flex; align-items: center; gap: 6px"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"
+              ></path>
+            </svg>
+            グループの登録
+          </h4>
           <div class="input-group">
             <input
               type="text"
@@ -3156,7 +3509,30 @@
             <button class="btn-blue" onclick="addGroup()">追加</button>
           </div>
 
-          <h4 class="section-title" style="display: flex; align-items: center; gap: 6px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> 項目の登録</h4>
+          <h4
+            class="section-title"
+            style="display: flex; align-items: center; gap: 6px"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+              ></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            項目の登録
+          </h4>
           <div class="input-group">
             <select id="projectGroupSelect"></select>
             <input type="text" id="newProjectName" placeholder="項目名" />
@@ -3168,7 +3544,26 @@
         </div>
 
         <div class="work-view" id="view-goals">
-          <h4 class="section-title" style="display: flex; align-items: center; gap: 6px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg> 月別目標金額の設定</h4>
+          <h4
+            class="section-title"
+            style="display: flex; align-items: center; gap: 6px"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="6"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+            月別目標金額の設定
+          </h4>
           <div class="input-group">
             <input
               type="month"
@@ -3527,6 +3922,29 @@
               <span class="btn-text">番号登録</span>
             </button>
 
+            <button
+              class="btn-filter"
+              id="calendarSettingsBtn"
+              onclick="openCalendarSettingsModal()"
+            >
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="12" cy="12" r="3"></circle>
+                <path
+                  d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"
+                ></path>
+              </svg>
+              <span class="btn-text">設定</span>
+            </button>
+
             <div
               class="monthly-total"
               id="trendsAverageDisplayMobile"
@@ -3540,10 +3958,27 @@
                 0月の合計: ¥0
               </div>
               <div class="progress-wrapper mobile-only-progress">
-                <span class="header-progress-text" id="calendarGoalTextMobile">目標 ¥0</span>
-                <div class="header-progress-bar" style="position:relative;">
-                  <div class="header-progress-fill" id="calendarHeaderProgressFillMobile"></div>
-                  <div id="calendarHeaderProgressTextMobile" style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-weight:bold;color:#fff;">0%</div>
+                <span class="header-progress-text" id="calendarGoalTextMobile"
+                  >目標 ¥0</span
+                >
+                <div class="header-progress-bar" style="position: relative">
+                  <div
+                    class="header-progress-fill"
+                    id="calendarHeaderProgressFillMobile"
+                  ></div>
+                  <div
+                    id="calendarHeaderProgressTextMobile"
+                    style="
+                      position: absolute;
+                      left: 50%;
+                      top: 50%;
+                      transform: translate(-50%, -50%);
+                      font-weight: bold;
+                      color: #fff;
+                    "
+                  >
+                    0%
+                  </div>
                 </div>
               </div>
             </div>
@@ -3666,8 +4101,33 @@
         </div>
       </div>
 
-      <div id="calendarView">
+      <div id="calendarView" style="position: relative">
         <div id="calendar"></div>
+        <!-- 5. クイック入力用のフローティングアクションボタン -->
+        <button
+          class="quick-add-fab"
+          onclick="
+            openModal(
+              new Date().toLocaleDateString('sv-SE', {
+                timeZone: 'Asia/Tokyo',
+              }),
+            )
+          "
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+        </button>
       </div>
 
       <div
@@ -3723,14 +4183,58 @@
             <div class="mypage-name" id="myPageName">ゲスト</div>
           </div>
           <div class="mypage-right">
-            <button class="btn-settings" onclick="openMyPageSettings()"><svg style="vertical-align: middle; margin-right: 4px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle></svg><span class="settings-text"> 設定</span></button>
+            <button class="btn-settings" onclick="openMyPageSettings()">
+              <svg
+                style="vertical-align: middle; margin-right: 4px"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"
+                ></path>
+                <circle cx="12" cy="12" r="3"></circle></svg
+              ><span class="settings-text"> 設定</span>
+            </button>
           </div>
         </div>
         <div class="mypage-analytics">
           <section class="mypage-chart-section">
             <div class="mypage-chart-header">
               <div>
-                <h3 class="mypage-chart-title" style="display: flex; align-items: center; gap: 6px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg> 今日の収益</h3>
+                <h3
+                  class="mypage-chart-title"
+                  style="display: flex; align-items: center; gap: 6px"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  >
+                    <rect
+                      x="3"
+                      y="4"
+                      width="18"
+                      height="18"
+                      rx="2"
+                      ry="2"
+                    ></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                  </svg>
+                  今日の収益
+                </h3>
                 <div
                   class="mypage-chart-subtext"
                   id="myPageTodayDateLabel"
@@ -4071,7 +4575,106 @@
     </nav>
 
     <script>
+      // ================= UI/UX ヘルパー =================
+      function triggerHaptic(type = "light") {
+        if (!window.navigator || !window.navigator.vibrate) return;
+        try {
+          if (type === "light") navigator.vibrate(10);
+          else if (type === "medium") navigator.vibrate(30);
+          else if (type === "heavy") navigator.vibrate(50);
+          else if (type === "success") navigator.vibrate([30, 50, 30]);
+          else if (type === "error") navigator.vibrate([50, 100, 50]);
+        } catch (e) {}
+      }
+
+      function showToast(message, type = "info") {
+        triggerHaptic(type === "error" ? "error" : "light");
+        const toast = document.createElement("div");
+        toast.className = `toast-notification ${type}`;
+        toast.innerHTML = `<span style="margin-right: 8px;">${type === "success" ? "✅" : type === "error" ? "❌" : "ℹ️"}</span>${message}`;
+        document.body.appendChild(toast);
+
+        setTimeout(() => toast.classList.add("show"), 10);
+
+        setTimeout(() => {
+          toast.classList.remove("show");
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      function hideSkeleton() {
+        const skeleton = document.getElementById("skeletonOverlay");
+        if (skeleton) skeleton.classList.add("hidden");
+      }
+
+      function showSkeleton() {
+        const skeleton = document.getElementById("skeletonOverlay");
+        if (skeleton) skeleton.classList.remove("hidden");
+      }
+
+      document.addEventListener("DOMContentLoaded", function () {
+        setTimeout(hideSkeleton, 500); // 初期ロードが速すぎる場合のチラつき防止用
+      });
+
       Chart.register(ChartDataLabels);
+
+      const scrubHapticPlugin = {
+        id: "scrubHaptic",
+        afterEvent(chart, args) {
+          if (window.innerWidth > 768) return;
+          const { event } = args;
+
+          if (event.type === "touchmove" || event.type === "mousemove") {
+            const active = chart.getActiveElements();
+            if (active.length > 0) {
+              const currentIndex = active[0].index;
+              if (chart._lastHapticIndex !== currentIndex) {
+                chart._lastHapticIndex = currentIndex;
+                triggerHaptic("light");
+              }
+            } else {
+              chart._lastHapticIndex = -1;
+            }
+          }
+        },
+      };
+      Chart.register(scrubHapticPlugin);
+
+      function setupChartTouchPrevent(canvasId) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas || canvas._hasScrubSetup) return;
+        canvas._hasScrubSetup = true;
+
+        canvas.addEventListener(
+          "touchstart",
+          (e) => {
+            if (e.touches.length > 0) {
+              canvas._startX = e.touches[0].clientX;
+              canvas._startY = e.touches[0].clientY;
+              canvas._isScrubbing = false;
+            }
+          },
+          { passive: true },
+        );
+
+        canvas.addEventListener(
+          "touchmove",
+          (e) => {
+            if (window.innerWidth > 768) return;
+            if (e.touches.length > 0) {
+              const dx = Math.abs(e.touches[0].clientX - canvas._startX);
+              const dy = Math.abs(e.touches[0].clientY - canvas._startY);
+              if (!canvas._isScrubbing && dx > 5 && dx > dy) {
+                canvas._isScrubbing = true;
+              }
+              if (canvas._isScrubbing) {
+                if (e.cancelable) e.preventDefault();
+              }
+            }
+          },
+          { passive: false },
+        );
+      }
 
       let calendar;
       let selectedDateStr = "";
@@ -4084,7 +4687,6 @@
       let currentTrendsUnit = "day";
       let currentAverageUnit = "day";
       let editingSafeId = null;
-      let previousMonthTotals = {};
 
       function loadData() {
         return JSON.parse(localStorage.getItem("my_revenue_data")) || {};
@@ -4123,18 +4725,6 @@
       }
       function saveGoals(goals) {
         localStorage.setItem("my_revenue_goals", JSON.stringify(goals));
-      }
-
-      function loadGoalCelebrated() {
-        return (
-          JSON.parse(localStorage.getItem("my_revenue_goal_celebrated")) || {}
-        );
-      }
-      function saveGoalCelebrated(data) {
-        localStorage.setItem(
-          "my_revenue_goal_celebrated",
-          JSON.stringify(data),
-        );
       }
 
       function getAllAppData() {
@@ -4422,33 +5012,6 @@
           renderAverageCharts();
       }
 
-      function triggerGoalCelebration() {}
-
-      function checkGoalAchievement(monthKey, total, goal) {
-        const celebrated = loadGoalCelebrated();
-        const prev = previousMonthTotals[monthKey];
-        previousMonthTotals[monthKey] = total;
-
-        if (goal <= 0 || total < goal) {
-          if (celebrated[monthKey]) {
-            delete celebrated[monthKey];
-            saveGoalCelebrated(celebrated);
-          }
-          return;
-        }
-
-        if (prev !== undefined && prev < goal && total >= goal) {
-          if (!celebrated[monthKey]) {
-            celebrated[monthKey] = true;
-            saveGoalCelebrated(celebrated);
-            setTimeout(() => triggerGoalCelebration(), 300);
-          }
-        } else if (total >= goal) {
-          celebrated[monthKey] = true;
-          saveGoalCelebrated(celebrated);
-        }
-      }
-
       function updateSafeTotalsDisplay(unusedAmount, usedAmount) {
         document.getElementById("safeUnusedTotalDisplay").textContent =
           `未使用: ¥${unusedAmount.toLocaleString()}`;
@@ -4553,8 +5116,13 @@
         }
 
         const calendarEl = document.getElementById("calendar");
+        const savedFirstDay = parseInt(
+          localStorage.getItem("calendarFirstDay") || "0",
+          10,
+        );
         calendar = new FullCalendar.Calendar(calendarEl, {
           initialView: "dayGridMonth",
+          firstDay: savedFirstDay,
           locale: "ja",
           height: "100%",
           fixedWeekCount: false,
@@ -4563,17 +5131,17 @@
             center: "title",
             right: "",
           },
-          dayCellContent: function(arg) {
+          dayCellContent: function (arg) {
             if (window.innerWidth <= 768) {
-              return arg.dayNumberText.replace('日', '');
+              return arg.dayNumberText.replace("日", "");
             }
             return arg.dayNumberText;
           },
           dateClick: function (info) {
-            openModal(info.dateStr);
+            openModal(info.dateStr, info.dayEl);
           },
           eventClick: function (info) {
-            openModal(info.event.startStr);
+            openModal(info.event.startStr, info.el);
           },
           datesSet: function () {
             updateMonthlyTotal();
@@ -4701,6 +5269,7 @@
       }
 
       function updateBottomNavActive(viewId) {
+        triggerHaptic("light");
         const items = document.querySelectorAll(".bottom-nav-item");
         items.forEach((item) => item.classList.remove("active"));
         const activeItem = document.querySelector(
@@ -4709,6 +5278,34 @@
         if (activeItem) {
           activeItem.classList.add("active");
         }
+      }
+
+      function openCalendarSettingsModal() {
+        const firstDay = localStorage.getItem("calendarFirstDay") || "0";
+        document.getElementById("calendarFirstDaySelect").value = firstDay;
+        const heatmap = localStorage.getItem("calendarHeatmap") === "true";
+        document.getElementById("calendarHeatmapCheckbox").checked = heatmap;
+        document.getElementById("calendarSettingsModal").style.display = "flex";
+      }
+
+      function closeCalendarSettingsModal() {
+        document.getElementById("calendarSettingsModal").style.display = "none";
+      }
+
+      function saveCalendarSettings() {
+        const firstDay = document.getElementById(
+          "calendarFirstDaySelect",
+        ).value;
+        const heatmap = document.getElementById(
+          "calendarHeatmapCheckbox",
+        ).checked;
+        localStorage.setItem("calendarFirstDay", firstDay);
+        localStorage.setItem("calendarHeatmap", heatmap);
+        closeCalendarSettingsModal();
+        if (calendar) {
+          calendar.setOption("firstDay", parseInt(firstDay, 10));
+        }
+        refreshCalendar();
       }
 
       function showCalendarView() {
@@ -4737,6 +5334,7 @@
 
         document.getElementById("calendarFilterContainer").style.display =
           "block";
+        document.getElementById("calendarSettingsBtn").style.display = "";
         document.getElementById("trendsFilterContainer").style.display = "none";
         document.getElementById("ratioFilterContainer").style.display = "none";
         document.getElementById("averageFilterContainer").style.display =
@@ -4778,6 +5376,7 @@
 
         document.getElementById("calendarFilterContainer").style.display =
           "none";
+        document.getElementById("calendarSettingsBtn").style.display = "none";
         document.getElementById("trendsFilterContainer").style.display =
           "block";
         document.getElementById("ratioFilterContainer").style.display = "none";
@@ -4819,6 +5418,7 @@
 
         document.getElementById("calendarFilterContainer").style.display =
           "none";
+        document.getElementById("calendarSettingsBtn").style.display = "none";
         document.getElementById("trendsFilterContainer").style.display = "none";
         document.getElementById("ratioFilterContainer").style.display = "block";
         document.getElementById("averageFilterContainer").style.display =
@@ -4860,6 +5460,7 @@
 
         document.getElementById("calendarFilterContainer").style.display =
           "none";
+        document.getElementById("calendarSettingsBtn").style.display = "none";
         document.getElementById("trendsFilterContainer").style.display = "none";
         document.getElementById("ratioFilterContainer").style.display = "none";
         document.getElementById("averageFilterContainer").style.display =
@@ -4906,6 +5507,7 @@
 
         document.getElementById("calendarFilterContainer").style.display =
           "none";
+        document.getElementById("calendarSettingsBtn").style.display = "none";
         document.getElementById("trendsFilterContainer").style.display = "none";
         document.getElementById("ratioFilterContainer").style.display = "none";
         document.getElementById("averageFilterContainer").style.display =
@@ -4945,6 +5547,7 @@
 
         document.getElementById("calendarFilterContainer").style.display =
           "none";
+        document.getElementById("calendarSettingsBtn").style.display = "none";
         document.getElementById("trendsFilterContainer").style.display = "none";
         document.getElementById("ratioFilterContainer").style.display = "none";
         document.getElementById("averageFilterContainer").style.display =
@@ -5133,8 +5736,11 @@
               legend: { display: false },
               datalabels: {
                 color: "#fff",
-                textStrokeColor: (!isDark && window.innerWidth <= 768) ? "rgba(0,0,0,0.5)" : "transparent",
-                textStrokeWidth: (!isDark && window.innerWidth <= 768) ? 3 : 0,
+                textStrokeColor:
+                  !isDark && window.innerWidth <= 768
+                    ? "rgba(0,0,0,0.5)"
+                    : "transparent",
+                textStrokeWidth: !isDark && window.innerWidth <= 768 ? 3 : 0,
                 font: { weight: "bold", size: 12 },
                 textAlign: "center",
                 formatter: (value, ctx) => {
@@ -5250,6 +5856,10 @@
                 },
               },
             },
+            interaction: {
+              mode: "index",
+              intersect: false,
+            },
             plugins: {
               legend: { display: false },
               datalabels: { display: false },
@@ -5263,6 +5873,7 @@
             },
           },
         });
+        setupChartTouchPrevent("myPageTrendsLineChart");
       }
 
       function renderMyPage() {
@@ -5438,6 +6049,7 @@
       }
 
       function saveSafeData() {
+        triggerHaptic("medium");
         const date = document.getElementById("safeDateInput").value;
         const name = document.getElementById("safeNameInput").value.trim();
         const code = document.getElementById("safeCodeInput").value.trim();
@@ -5579,12 +6191,14 @@
         const titleEl = document.getElementById("workModalTitle");
 
         if (viewType === "projects") {
-          titleEl.innerHTML = '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg> グループ・項目の登録</span>';
+          titleEl.innerHTML =
+            '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg> グループ・項目の登録</span>';
           document.getElementById("view-projects").classList.add("active");
           updateGroupDropdowns();
           renderProjectsList();
         } else if (viewType === "goals") {
-          titleEl.innerHTML = '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg> 目標金額の設定</span>';
+          titleEl.innerHTML =
+            '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg> 目標金額の設定</span>';
           document.getElementById("view-goals").classList.add("active");
           if (!document.getElementById("goalMonthSelect").value) {
             document.getElementById("goalMonthSelect").value = new Date()
@@ -5593,12 +6207,14 @@
           }
           loadGoalForMonth();
         } else if (viewType === "monthly") {
-          titleEl.innerHTML = '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg> 項目ごとの一括入力</span>';
+          titleEl.innerHTML =
+            '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"></rect><line x1="16" x2="16" y1="2" y2="6"></line><line x1="8" x2="8" y1="2" y2="6"></line><line x1="3" x2="21" y1="10" y2="10"></line><path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path></svg> 項目ごとの一括入力</span>';
           document.getElementById("view-monthly").classList.add("active");
           updateProjectDropdownForMonthly();
           renderMonthlyDays();
         } else if (viewType === "daily") {
-          titleEl.innerHTML = '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> 各日の一括入力</span>';
+          titleEl.innerHTML =
+            '<span style="display:flex; align-items:center; gap:8px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg> 各日の一括入力</span>';
           document.getElementById("view-daily").classList.add("active");
           renderDailyFields();
         }
@@ -6158,6 +6774,7 @@
         document.getElementById("goalAmount").value = goals[monthStr] || "";
       }
       function saveGoal() {
+        triggerHaptic("medium");
         const monthStr = document.getElementById("goalMonthSelect").value;
         const amount = parseInt(
           document.getElementById("goalAmount").value,
@@ -6229,6 +6846,7 @@
       }
 
       function saveMonthlyRevenue() {
+        triggerHaptic("medium");
         const projName = document.getElementById("monthlyProjSelect").value;
         if (!projName) return;
         const data = loadData();
@@ -6289,6 +6907,7 @@
       }
 
       function saveDailyRevenue() {
+        triggerHaptic("medium");
         const dateStr = document.getElementById("dailyDateSelect").value;
         if (!dateStr) return;
         const data = loadData();
@@ -6318,18 +6937,47 @@
         calendar.removeAllEvents();
         const data = loadData();
         const activeProjs = getActiveProjects("filter-cb-proj");
+
+        let maxTotal = 0;
+        const heatmap = localStorage.getItem("calendarHeatmap") === "true";
+        if (heatmap) {
+          for (const dateStr in data) {
+            const list = data[dateStr];
+            if (list && list.length > 0) {
+              const dayTotal = list.reduce((sum, item) => {
+                return activeProjs.includes(item.name)
+                  ? sum + item.amount
+                  : sum;
+              }, 0);
+              if (dayTotal > maxTotal) maxTotal = dayTotal;
+            }
+          }
+        }
+
         for (const dateStr in data) {
           const list = data[dateStr];
           if (list && list.length > 0) {
             const dayTotal = list.reduce((sum, item) => {
               return activeProjs.includes(item.name) ? sum + item.amount : sum;
             }, 0);
-            if (dayTotal > 0)
+            if (dayTotal > 0) {
               calendar.addEvent({
                 title: `¥${dayTotal.toLocaleString()}`,
                 start: dateStr,
                 allDay: true,
               });
+
+              if (heatmap && maxTotal > 0) {
+                const ratio = dayTotal / maxTotal;
+                const alpha = Math.min(1, 0.2 + ratio * 0.8);
+                calendar.addEvent({
+                  start: dateStr,
+                  allDay: true,
+                  display: "background",
+                  backgroundColor: `rgba(56, 161, 105, ${alpha})`,
+                });
+              }
+            }
           }
         }
         updateMonthlyTotal();
@@ -6376,16 +7024,26 @@
         }
 
         const pct = goal > 0 ? Math.min(100, (total / goal) * 100) : 0;
-        document.getElementById("calendarHeaderProgressFill").style.width = pct + "%";
-        document.getElementById("calendarHeaderProgressText").textContent = goal > 0 ? pct.toFixed(1) + "%" : "-";
-        document.getElementById("calendarGoalText").textContent = goal > 0 ? "目標 ¥" + goal.toLocaleString() : "目標未設定";
+        document.getElementById("calendarHeaderProgressFill").style.width =
+          pct + "%";
+        document.getElementById("calendarHeaderProgressText").textContent =
+          goal > 0 ? pct.toFixed(1) + "%" : "-";
+        document.getElementById("calendarGoalText").textContent =
+          goal > 0 ? "目標 ¥" + goal.toLocaleString() : "目標未設定";
 
-        const fillMobile = document.getElementById("calendarHeaderProgressFillMobile");
+        const fillMobile = document.getElementById(
+          "calendarHeaderProgressFillMobile",
+        );
         if (fillMobile) fillMobile.style.width = pct + "%";
-        const textMobile = document.getElementById("calendarHeaderProgressTextMobile");
-        if (textMobile) textMobile.textContent = goal > 0 ? pct.toFixed(1) + "%" : "-";
+        const textMobile = document.getElementById(
+          "calendarHeaderProgressTextMobile",
+        );
+        if (textMobile)
+          textMobile.textContent = goal > 0 ? pct.toFixed(1) + "%" : "-";
         const goalMobile = document.getElementById("calendarGoalTextMobile");
-        if (goalMobile) goalMobile.textContent = goal > 0 ? "目標 ¥" + goal.toLocaleString() : "目標未設定";
+        if (goalMobile)
+          goalMobile.textContent =
+            goal > 0 ? "目標 ¥" + goal.toLocaleString() : "目標未設定";
       }
 
       let prevMonthlyTotal = 0;
@@ -6440,14 +7098,12 @@
         );
         prevMonthlyTotal = monthlyTotal;
 
-        const monthKey = `${currentYear}-${String(currentMonth).padStart(2, "0")}`;
-        const goals = loadGoals();
-        const goal = goals[monthKey] || 0;
-        checkGoalAchievement(monthKey, monthlyTotal, goal);
         updateCalendarHeaderProgress();
       }
 
-      function openModal(dateStr) {
+      let currentHeroCell = null;
+
+      function openModal(dateStr, targetEl) {
         selectedDateStr = dateStr;
         const [y, m, d] = dateStr.split("-");
         document.getElementById("modalDateTitle").textContent =
@@ -6461,14 +7117,73 @@
           select.appendChild(opt);
         });
         document.getElementById("itemAmount").value = "";
-        renderList();
-        document.getElementById("revenueModal").style.display = "flex";
+
+        const showModal = () => {
+          renderList();
+          document.getElementById("revenueModal").style.display = "flex";
+        };
+
+        if (
+          window.innerWidth <= 768 &&
+          document.startViewTransition &&
+          targetEl
+        ) {
+          currentHeroCell = targetEl;
+          targetEl.style.viewTransitionName = "hero-cell";
+          const modalContent = document.querySelector(
+            "#revenueModal .work-modal-content",
+          );
+          if (modalContent) modalContent.style.viewTransitionName = "hero-cell";
+
+          const transition = document.startViewTransition(() => {
+            showModal();
+          });
+
+          transition.finished.finally(() => {
+            if (modalContent) modalContent.style.viewTransitionName = "";
+          });
+        } else {
+          currentHeroCell = null;
+          showModal();
+        }
       }
+
       function closeModal() {
-        document.getElementById("revenueModal").style.display = "none";
-        if (dayPieChartInstance) {
-          dayPieChartInstance.destroy();
-          dayPieChartInstance = null;
+        const doClose = () => {
+          document.getElementById("revenueModal").style.display = "none";
+          if (dayPieChartInstance) {
+            dayPieChartInstance.destroy();
+            dayPieChartInstance = null;
+          }
+        };
+
+        if (
+          window.innerWidth <= 768 &&
+          document.startViewTransition &&
+          currentHeroCell
+        ) {
+          const modalContent = document.querySelector(
+            "#revenueModal .work-modal-content",
+          );
+          if (modalContent) modalContent.style.viewTransitionName = "hero-cell";
+
+          const transition = document.startViewTransition(() => {
+            doClose();
+          });
+
+          transition.finished.finally(() => {
+            if (currentHeroCell) {
+              currentHeroCell.style.viewTransitionName = "";
+              currentHeroCell = null;
+            }
+            if (modalContent) modalContent.style.viewTransitionName = "";
+          });
+        } else {
+          doClose();
+          if (currentHeroCell) {
+            currentHeroCell.style.viewTransitionName = "";
+            currentHeroCell = null;
+          }
         }
       }
 
@@ -6617,8 +7332,11 @@
                 },
                 datalabels: {
                   color: "#fff",
-                  textStrokeColor: (!isDark && window.innerWidth <= 768) ? "rgba(0,0,0,0.5)" : "transparent",
-                  textStrokeWidth: (!isDark && window.innerWidth <= 768) ? 3 : 0,
+                  textStrokeColor:
+                    !isDark && window.innerWidth <= 768
+                      ? "rgba(0,0,0,0.5)"
+                      : "transparent",
+                  textStrokeWidth: !isDark && window.innerWidth <= 768 ? 3 : 0,
                   font: {
                     weight: "bold",
                     size: window.innerWidth <= 768 ? 9 : 11,
@@ -6903,6 +7621,10 @@
                 },
               },
             },
+            interaction: {
+              mode: "index",
+              intersect: false,
+            },
             plugins: {
               legend: { display: false },
               datalabels: { display: false },
@@ -6916,6 +7638,7 @@
             },
           },
         });
+        setupChartTouchPrevent("monthlyLineChart");
       }
 
       function renderRatioChart() {
@@ -7060,8 +7783,11 @@
               legend: { display: false },
               datalabels: {
                 color: "#fff",
-                textStrokeColor: (!isDark && window.innerWidth <= 768) ? "rgba(0,0,0,0.5)" : "transparent",
-                textStrokeWidth: (!isDark && window.innerWidth <= 768) ? 3 : 0,
+                textStrokeColor:
+                  !isDark && window.innerWidth <= 768
+                    ? "rgba(0,0,0,0.5)"
+                    : "transparent",
+                textStrokeWidth: !isDark && window.innerWidth <= 768 ? 3 : 0,
                 font: { weight: "bold", size: 12 },
                 textAlign: "center",
                 formatter: (value, ctx) => {
@@ -7391,8 +8117,11 @@
                 legend: { display: false },
                 datalabels: {
                   color: "#fff",
-                  textStrokeColor: (!isDark && window.innerWidth <= 768) ? "rgba(0,0,0,0.5)" : "transparent",
-                  textStrokeWidth: (!isDark && window.innerWidth <= 768) ? 3 : 0,
+                  textStrokeColor:
+                    !isDark && window.innerWidth <= 768
+                      ? "rgba(0,0,0,0.5)"
+                      : "transparent",
+                  textStrokeWidth: !isDark && window.innerWidth <= 768 ? 3 : 0,
                   font: { weight: "bold", size: 9 },
                   textAlign: "center",
                   formatter: (value, ctx) => {
@@ -7816,20 +8545,20 @@
 
         cloudSyncInProgress = true;
         updateCloudSyncUI("状態: 同期中…", "syncing");
+        if (showAlert) showSkeleton();
 
         try {
           const backup = getAllAppData();
           await uploadRemoteBackup(backup);
           updateCloudSyncUI("状態: 保存完了", "ok");
-          if (showAlert) alert("Google Drive に保存しました。");
+          if (showAlert) showToast("Google Drive に保存しました。", "success");
         } catch (err) {
           updateCloudSyncUI("状態: 保存に失敗しました", "error");
           if (showAlert)
-            alert(
-              "Google Drive への保存に失敗しました。\n設定 URL・トークン、Apps Script のデプロイを確認してください。",
-            );
+            showToast("Google Drive への保存に失敗しました。", "error");
         } finally {
           cloudSyncInProgress = false;
+          if (showAlert) hideSkeleton();
           updateCloudSyncUI();
         }
       }
@@ -7838,20 +8567,31 @@
         if (!isGoogleDriveConnected() || cloudSyncRestoring) return;
 
         updateCloudSyncUI("状態: Drive から取得中…", "syncing");
+        if (!silent) showSkeleton();
         try {
           const remote = await fetchRemoteBackup();
           if (remote) {
             const applied = applyRemoteBackupIfNewer(remote, silent);
-            if (applied)
+            if (applied) {
               localStorage.setItem(
                 "my_revenue_last_sync_at",
                 new Date().toISOString(),
               );
+              if (!silent)
+                showToast("Google Drive からデータを同期しました。", "success");
+            } else {
+              if (!silent && !cloudSyncRestoring)
+                showToast("最新のデータです。", "info");
+            }
           }
           updateCloudSyncUI();
         } catch (err) {
-          if (!silent) updateCloudSyncUI("状態: 取得に失敗しました", "error");
-          else updateCloudSyncUI();
+          if (!silent) {
+            updateCloudSyncUI("状態: 取得に失敗しました", "error");
+            showToast("Google Drive からの取得に失敗しました。", "error");
+          } else updateCloudSyncUI();
+        } finally {
+          if (!silent) hideSkeleton();
         }
       }
 
@@ -7967,36 +8707,110 @@
         if (isGoogleDriveConnected()) pullFromGoogleDrive(true);
       }
 
-      // スマホ向けスワイプでの画面切り替え
+      // スマホ向けスワイプでの画面切り替え & Pull to Refresh
       let swipeStartX = 0;
       let swipeStartY = 0;
       let swipeEndX = 0;
       let swipeEndY = 0;
+      let isPulling = false;
+      const ptrIndicator = document.getElementById("ptrIndicator");
+      const ptrSpinner = document.getElementById("ptrSpinner");
 
-      document.body.addEventListener('touchstart', function(e) {
-        if (e.changedTouches && e.changedTouches.length > 0) {
-          swipeStartX = e.changedTouches[0].screenX;
-          swipeStartY = e.changedTouches[0].screenY;
-        }
-      }, {passive: true, capture: true});
+      document.body.addEventListener(
+        "touchstart",
+        function (e) {
+          if (e.changedTouches && e.changedTouches.length > 0) {
+            swipeStartX = e.changedTouches[0].screenX;
+            swipeStartY = e.changedTouches[0].screenY;
+            if (window.scrollY === 0) {
+              isPulling = true;
+              document.body.classList.remove("pull-transition");
+            }
+          }
+        },
+        { passive: true, capture: true },
+      );
 
-      document.body.addEventListener('touchend', function(e) {
-        if (window.innerWidth > 768) return;
-        if (e.changedTouches && e.changedTouches.length > 0) {
-          swipeEndX = e.changedTouches[0].screenX;
-          swipeEndY = e.changedTouches[0].screenY;
-          handleSwipeViewSwitch(e.target);
-        }
-      }, {passive: true, capture: true});
+      document.body.addEventListener(
+        "touchmove",
+        function (e) {
+          if (!isPulling || window.innerWidth > 768) return;
+          if (e.changedTouches && e.changedTouches.length > 0) {
+            const currentY = e.changedTouches[0].screenY;
+            const currentX = e.changedTouches[0].screenX;
+            const deltaY = currentY - swipeStartY;
+            const deltaX = currentX - swipeStartX;
+
+            if (
+              deltaY > 0 &&
+              Math.abs(deltaY) > Math.abs(deltaX) &&
+              window.scrollY === 0
+            ) {
+              const pullDistance = Math.min(deltaY * 0.4, 70); // stop at ~70px
+              document.documentElement.style.setProperty(
+                "--pull-y",
+                `${pullDistance}px`,
+              );
+              ptrIndicator.classList.add("visible");
+              ptrSpinner.style.transform = `rotate(${deltaY * 2}deg)`;
+              if (e.cancelable) e.preventDefault();
+            }
+          }
+        },
+        { passive: false, capture: true },
+      );
+
+      document.body.addEventListener(
+        "touchend",
+        function (e) {
+          if (window.innerWidth > 768) return;
+          if (e.changedTouches && e.changedTouches.length > 0) {
+            swipeEndX = e.changedTouches[0].screenX;
+            swipeEndY = e.changedTouches[0].screenY;
+
+            const deltaY = swipeEndY - swipeStartY;
+            if (isPulling && deltaY > 0) {
+              document.body.classList.add("pull-transition");
+              document.documentElement.style.setProperty("--pull-y", `0px`);
+
+              if (deltaY > 120 && window.scrollY === 0) {
+                ptrSpinner.classList.add("spinning");
+                triggerHaptic("medium");
+
+                if (isGoogleDriveConnected()) {
+                  pullFromGoogleDrive(false).then(() => {
+                    ptrIndicator.classList.remove("visible");
+                    ptrSpinner.classList.remove("spinning");
+                  });
+                } else {
+                  showSkeleton();
+                  setTimeout(() => {
+                    hideSkeleton();
+                    ptrIndicator.classList.remove("visible");
+                    ptrSpinner.classList.remove("spinning");
+                  }, 600);
+                }
+              } else {
+                ptrIndicator.classList.remove("visible");
+              }
+            }
+            isPulling = false;
+
+            handleSwipeViewSwitch(e.target);
+          }
+        },
+        { passive: true, capture: true },
+      );
 
       function isHorizontallyScrollable(element) {
         if (!element) return false;
         if (element.nodeType !== Node.ELEMENT_NODE) {
           return isHorizontallyScrollable(element.parentElement);
         }
-        if (element === document.body || element === document.documentElement) return false;
+        if (element === document.body || element === document.documentElement)
+          return false;
         const style = window.getComputedStyle(element);
-        if (style.overflowX === 'auto' || style.overflowX === 'scroll') {
+        if (style.overflowX === "auto" || style.overflowX === "scroll") {
           if (element.scrollWidth > element.clientWidth + 1) {
             return true;
           }
@@ -8005,28 +8819,64 @@
       }
 
       function handleSwipeViewSwitch(target) {
-        if (document.getElementById("sidebar") && document.getElementById("sidebar").classList.contains("open")) return;
-        
-        const overlays = document.querySelectorAll('.work-modal-overlay, .sidebar-overlay');
+        if (
+          document.getElementById("sidebar") &&
+          document.getElementById("sidebar").classList.contains("open")
+        )
+          return;
+
+        const overlays = document.querySelectorAll(
+          ".work-modal-overlay, .sidebar-overlay",
+        );
         for (let i = 0; i < overlays.length; i++) {
-          if (window.getComputedStyle(overlays[i]).display !== 'none') {
+          if (window.getComputedStyle(overlays[i]).display !== "none") {
             return;
           }
         }
 
         const deltaX = swipeEndX - swipeStartX;
         const deltaY = swipeEndY - swipeStartY;
-        
-        if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY) * 1.5) {
+
+        if (
+          Math.abs(deltaX) > 60 &&
+          Math.abs(deltaX) > Math.abs(deltaY) * 1.5
+        ) {
           if (isHorizontallyScrollable(target)) return;
 
-          const viewList = ["calendar", "trends", "ratio", "average", "safe", "mypage"];
+          const viewList = [
+            "calendar",
+            "trends",
+            "ratio",
+            "average",
+            "safe",
+            "mypage",
+          ];
           let currentView = "calendar";
-          if (document.getElementById("trendsView") && document.getElementById("trendsView").style.display === "flex") currentView = "trends";
-          else if (document.getElementById("ratioView") && document.getElementById("ratioView").style.display === "flex") currentView = "ratio";
-          else if (document.getElementById("averageView") && document.getElementById("averageView").style.display === "flex") currentView = "average";
-          else if (document.getElementById("safeView") && document.getElementById("safeView").style.display === "flex") currentView = "safe";
-          else if (document.getElementById("myPageView") && document.getElementById("myPageView").style.display === "flex") currentView = "mypage";
+          if (
+            document.getElementById("trendsView") &&
+            document.getElementById("trendsView").style.display === "flex"
+          )
+            currentView = "trends";
+          else if (
+            document.getElementById("ratioView") &&
+            document.getElementById("ratioView").style.display === "flex"
+          )
+            currentView = "ratio";
+          else if (
+            document.getElementById("averageView") &&
+            document.getElementById("averageView").style.display === "flex"
+          )
+            currentView = "average";
+          else if (
+            document.getElementById("safeView") &&
+            document.getElementById("safeView").style.display === "flex"
+          )
+            currentView = "safe";
+          else if (
+            document.getElementById("myPageView") &&
+            document.getElementById("myPageView").style.display === "flex"
+          )
+            currentView = "mypage";
 
           const currentIndex = viewList.indexOf(currentView);
 
