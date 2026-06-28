@@ -352,22 +352,22 @@
         pointer-events: none !important;
       }
       
-      /* ヒートマップが濃い場合の文字色調整 */
-      .fc-daygrid-day.heatmap-dark-bg .fc-daygrid-day-number,
-      .fc-daygrid-day.heatmap-dark-bg .fc-event,
-      .fc-daygrid-day.heatmap-dark-bg .fc-event-main,
-      .fc-daygrid-day.heatmap-dark-bg .fc-event-title,
-      .fc-daygrid-day.heatmap-dark-bg .fc-daygrid-event,
-      .fc-daygrid-day.heatmap-dark-bg .fc-daygrid-event a {
-        color: #ffffff !important;
+      /* ヒートマップ時の文字色グラデーション */
+      .fc-daygrid-day.heatmap-active .fc-daygrid-day-number,
+      .fc-daygrid-day.heatmap-active .fc-event,
+      .fc-daygrid-day.heatmap-active .fc-event-main,
+      .fc-daygrid-day.heatmap-active .fc-event-title,
+      .fc-daygrid-day.heatmap-active .fc-daygrid-event,
+      .fc-daygrid-day.heatmap-active .fc-daygrid-event a {
+        color: var(--hm-text-light) !important;
       }
-      body.dark-mode .fc-daygrid-day.heatmap-dark-bg .fc-daygrid-day-number,
-      body.dark-mode .fc-daygrid-day.heatmap-dark-bg .fc-event,
-      body.dark-mode .fc-daygrid-day.heatmap-dark-bg .fc-event-main,
-      body.dark-mode .fc-daygrid-day.heatmap-dark-bg .fc-event-title,
-      body.dark-mode .fc-daygrid-day.heatmap-dark-bg .fc-daygrid-event,
-      body.dark-mode .fc-daygrid-day.heatmap-dark-bg .fc-daygrid-event a {
-        color: #ffffff !important;
+      body.dark-mode .fc-daygrid-day.heatmap-active .fc-daygrid-day-number,
+      body.dark-mode .fc-daygrid-day.heatmap-active .fc-event,
+      body.dark-mode .fc-daygrid-day.heatmap-active .fc-event-main,
+      body.dark-mode .fc-daygrid-day.heatmap-active .fc-event-title,
+      body.dark-mode .fc-daygrid-day.heatmap-active .fc-daygrid-event,
+      body.dark-mode .fc-daygrid-day.heatmap-active .fc-daygrid-event a {
+        color: var(--hm-text-dark) !important;
       }
 
       .fc-event,
@@ -7209,27 +7209,40 @@
           if (!dateStr) return;
           
           let alpha = 0;
+          let ratio = 0;
           if (heatmap && maxTotal > 0 && data[dateStr]) {
             const list = data[dateStr];
             const dayTotal = list.reduce((sum, item) => {
               return activeProjs.includes(item.name) ? sum + item.amount : sum;
             }, 0);
             if (dayTotal > 0) {
-              const ratio = dayTotal / maxTotal;
+              ratio = dayTotal / maxTotal;
               alpha = Math.min(1, 0.2 + ratio * 0.8);
             }
           }
           
           if (alpha > 0) {
-            dayEl.style.backgroundColor = `rgba(56, 161, 105, ${alpha})`;
-            if (alpha > 0.45) {
-              dayEl.classList.add("heatmap-dark-bg");
-            } else {
-              dayEl.classList.remove("heatmap-dark-bg");
-            }
+            // 背景色と文字色を一対一対応させ、くっきり見せるための5段階レベル
+            let level = 0;
+            if (ratio >= 0.8) level = 4;
+            else if (ratio >= 0.6) level = 3;
+            else if (ratio >= 0.4) level = 2;
+            else if (ratio >= 0.2) level = 1;
+            else level = 0;
+
+            const bgAlphas = [0.15, 0.35, 0.55, 0.8, 1.0];
+            const textColorsLight = ["#022c22", "#022c22", "#022c22", "#ffffff", "#ffffff"];
+            const textColorsDark = ["#a7f3d0", "#86efac", "#ffffff", "#ffffff", "#ffffff"];
+
+            dayEl.style.backgroundColor = `rgba(56, 161, 105, ${bgAlphas[level]})`;
+            dayEl.style.setProperty('--hm-text-light', textColorsLight[level]);
+            dayEl.style.setProperty('--hm-text-dark', textColorsDark[level]);
+            dayEl.classList.add("heatmap-active");
           } else {
             dayEl.style.backgroundColor = "";
-            dayEl.classList.remove("heatmap-dark-bg");
+            dayEl.style.removeProperty('--hm-text-light');
+            dayEl.style.removeProperty('--hm-text-dark');
+            dayEl.classList.remove("heatmap-active");
           }
         });
       }
