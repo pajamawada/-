@@ -395,13 +395,11 @@
       .fc-daygrid-day {
         cursor: pointer;
       }
-      @media (hover: hover) and (pointer: fine) {
-        .fc-daygrid-day:hover {
-          background-color: #f7fafc;
-        }
-        .fc-daygrid-day[style*="background-color"]:hover {
-          filter: brightness(0.95);
-        }
+      .fc-daygrid-day:not(.heatmap-active):hover {
+        background-color: #edf2f7 !important;
+      }
+      .fc-daygrid-day.heatmap-active:hover {
+        filter: brightness(0.9) !important;
       }
       .fc-daygrid-day-frame {
         min-height: 60px !important;
@@ -1260,13 +1258,11 @@
       body.dark-mode .fc-col-header-cell {
         background-color: #1a202c;
       }
-      @media (hover: hover) and (pointer: fine) {
-        body.dark-mode .fc-daygrid-day:hover {
-          background-color: #4a5568;
-        }
-        body.dark-mode .fc-daygrid-day[style*="background-color"]:hover {
-          filter: brightness(1.2);
-        }
+      body.dark-mode .fc-daygrid-day:not(.heatmap-active):hover {
+        background-color: #4a5568 !important;
+      }
+      body.dark-mode .fc-daygrid-day.heatmap-active:hover {
+        filter: brightness(1.2) !important;
       }
       body.dark-mode .fc-day-other {
         background-color: #232934;
